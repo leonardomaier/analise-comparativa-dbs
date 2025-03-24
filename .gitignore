@@ -1,0 +1,7 @@
+output/
+.ipy*
+web/
+java*
+jmeter.log
+metrics_during_stress_test.csv
+.DS_Store

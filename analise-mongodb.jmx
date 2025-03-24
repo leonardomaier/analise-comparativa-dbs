@@ -1,0 +1,670 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan - MongoDB">
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+    </TestPlan>
+    <hashTree>
+      <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="setUp Thread Group">
+        <intProp name="ThreadGroup.num_threads">1</intProp>
+        <intProp name="ThreadGroup.ramp_time">1</intProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </SetupThreadGroup>
+      <hashTree>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Connect to database" enabled="true">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import com.mongodb.MongoClient
+import com.mongodb.MongoClientURI
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoCollection;
+import org.bson.Document;
+
+String mongoUri = &quot;mongodb://localhost:27017&quot;
+MongoClientURI uri = new MongoClientURI(mongoUri)
+
+MongoClient mongoClient = new MongoClient(uri)
+
+MongoDatabase database =  mongoClient.getDatabase(&quot;analise-comparativa-dbs&quot;);
+
+String collectionName = &quot;logs&quot;
+
+// Drop collection if it exists
+database.getCollection(collectionName).drop()
+
+// Explicitly create the collection (without inserting data)
+database.createCollection(collectionName)
+
+// Get logs collection
+MongoCollection&lt;Document&gt; collection = database.getCollection(collectionName);
+
+props.put(&quot;logs_collection&quot;, collection)</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Main Thread Group">
+        <intProp name="ThreadGroup.num_threads">10</intProp>
+        <intProp name="ThreadGroup.ramp_time">1</intProp>
+        <longProp name="ThreadGroup.duration">15</longProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <intProp name="LoopController.loops">-1</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Set custom variables" enabled="true">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">// Define possible log levels
+def logLevels = [&quot;INFO&quot;, &quot;ERROR&quot;, &quot;WARN&quot;]
+def sources = [&quot;AppServer&quot;, &quot;WebApp&quot;, &quot;Database&quot;, &quot;API&quot;, &quot;MobileApp&quot;]
+
+// Pick one randomly
+def selectedLogLevel = logLevels[new Random().nextInt(logLevels.size())]
+def selectedSource = sources[new Random().nextInt(sources.size())]
+
+vars.put(&quot;log_level&quot;, selectedLogLevel)
+vars.put(&quot;source&quot;, selectedSource)</stringProp>
+        </JSR223PreProcessor>
+        <hashTree/>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Insert logs">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import com.mongodb.client.MongoCollection;
+import org.bson.Document;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Random;
+import java.util.ArrayList;
+import java.util.List;
+
+MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;);
+
+// Define Random Generator
+Random rand = new Random();
+
+// Generate timestamps between the range
+Instant startDate = Instant.parse(&quot;2020-01-10T20:00:00Z&quot;);
+Instant endDate = Instant.parse(&quot;2024-01-10T10:00:00Z&quot;);
+
+// Prepare list of documents
+List&lt;Document&gt; logEntries = new ArrayList&lt;&gt;();
+
+for (int i = 0; i &lt; 10; i++) {
+    // Generate a random timestamp within range
+    long randomSeconds = rand.nextLong() % ChronoUnit.SECONDS.between(startDate, endDate);
+    Instant randomTimestamp = startDate.plusSeconds(randomSeconds);
+
+    // Create document
+    Document logEntry = new Document(&quot;timestamp&quot;, randomTimestamp.toString())
+        .append(&quot;log_level&quot;, vars.get(&quot;log_level&quot;))  // Get JMeter variable
+        .append(&quot;message&quot;, &quot;Random log message: &quot; + (rand.nextInt(1000) + 1))
+        .append(&quot;source&quot;, &quot;Source: &quot; + vars.get(&quot;source&quot;))
+        .append(&quot;test_id&quot;, rand.nextInt(10) + 1);
+
+    logEntries.add(logEntry);
+}
+
+// Insert all documents into MongoDB
+collection.insertMany(logEntries);</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Update single random log">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import com.mongodb.client.model.Updates;
+import com.mongodb.client.MongoCollection;
+import org.bson.Document;
+import java.util.Random;
+
+MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;);
+Random rand = new Random();
+
+// Find the first 100 documents by natural order (insertion order)
+List&lt;Document&gt; documents = collection.find().limit(100).into(new ArrayList&lt;&gt;());
+
+// Loop over the documents and update them
+for (Document doc : documents) {
+    int randomValue = rand.nextInt(1000);  // Generate a random number between 0 and 999
+    collection.updateOne(new Document(&quot;_id&quot;, doc.get(&quot;_id&quot;)), 
+                          Updates.set(&quot;message&quot;, &quot;Updated log message: &quot; + randomValue));
+    log.info(&quot;Updated document with _id: &quot; + doc.get(&quot;_id&quot;) + &quot; to random value: &quot; + randomValue);
+}</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Delete oldest logs">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import com.mongodb.client.MongoCollection
+import org.bson.Document
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import com.mongodb.client.MongoClients
+import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Sorts
+
+MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;)
+
+def formatter = DateTimeFormatter.ISO_DATE_TIME
+
+def minTimestampString = collection.find().sort(Sorts.ascending(&quot;timestamp&quot;)).limit(1).first()?.timestamp
+if (minTimestampString == null) {
+    println &quot;Nenhum timestamp encontrado.&quot;
+    return
+}
+def minTimestamp = LocalDateTime.parse(minTimestampString, formatter)
+
+def targetTimestamp = minTimestamp.plus(15, ChronoUnit.DAYS)
+
+def logsToDelete = collection.find(Filters.lt(&quot;timestamp&quot;, targetTimestamp.toString()))
+                            .sort(Sorts.ascending(&quot;timestamp&quot;))
+                            .limit(10)
+                            .collect { it.timestamp }
+
+if (logsToDelete) {
+    collection.deleteMany(Filters.in(&quot;timestamp&quot;, logsToDelete))
+}
+</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Filter by log_level INFO" enabled="true">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import com.mongodb.client.MongoCollection;
+import org.bson.Document;
+
+MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;);
+
+// Create a filter to match documents where log_level = &apos;INFO&apos;
+Document filter = new Document(&quot;log_level&quot;, &quot;INFO&quot;);
+
+// Find all documents matching the filter
+collection.find(filter)</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Filter by log_level ERROR" enabled="true">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import com.mongodb.client.MongoCollection;
+import org.bson.Document;
+
+MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;);
+
+// Create a filter to match documents where log_level = &apos;ERROR&apos;
+Document filter = new Document(&quot;log_level&quot;, &quot;ERROR&quot;);
+
+// Find all documents matching the filter
+collection.find(filter)</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Filter by log_level WARN">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import com.mongodb.client.MongoCollection;
+import org.bson.Document;
+
+MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;);
+
+// Create a filter to match documents where log_level = &apos;WARN&apos;
+Document filter = new Document(&quot;log_level&quot;, &quot;WARN&quot;);
+
+// Find all documents matching the filter
+collection.find(filter)</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Group and count by log_level" enabled="true">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import com.mongodb.client.MongoCollection;
+import org.bson.Document;
+
+MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;);
+
+// MongoDB aggregation pipeline to group by log_level and count occurrences
+collection.aggregate([
+    // Group by log_level and count the occurrences
+    new Document(&apos;$group&apos;, new Document(&apos;_id&apos;, &apos;$log_level&apos;).append(&apos;log_count&apos;, new Document(&apos;$sum&apos;, 1))),
+    
+    // Sort by log_count in descending order
+    new Document(&apos;$sort&apos;, new Document(&apos;log_count&apos;, -1))
+])</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Group and count by log_level and %" enabled="true">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import com.mongodb.client.MongoCollection
+import org.bson.Document
+
+// Get the MongoDB collection object from the props
+MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;)
+
+// MongoDB aggregation pipeline
+collection.aggregate([
+    // Group by log_level and count occurrences
+    new Document(&apos;$group&apos;, new Document(&apos;_id&apos;, &apos;$log_level&apos;)
+        .append(&apos;log_count&apos;, new Document(&apos;$sum&apos;, 1))
+    ),
+
+    // Lookup to calculate the total logs count
+    new Document(&apos;$lookup&apos;, [
+        &quot;from&quot;: &quot;logs&quot;,  // The same collection we&apos;re working with
+        &quot;pipeline&quot;: [new Document(&apos;$count&apos;, &quot;totalLogs&quot;)],  // Counting total logs in the collection
+        &quot;as&quot;: &quot;totalLogs&quot;  // The result will be put into the &apos;totalLogs&apos; field
+    ]),
+
+    // Unwind the totalLogs to extract the count value
+    new Document(&apos;$unwind&apos;, &apos;$totalLogs&apos;),
+
+    // Project the final result, including the percentage
+    new Document(&apos;$project&apos;, new Document(&apos;log_level&apos;, &apos;$_id&apos;)
+        .append(&apos;log_count&apos;, &apos;$log_count&apos;)
+        .append(&apos;percentage&apos;, new Document(&apos;$round&apos;, [
+            new Document(&apos;$multiply&apos;, [
+                new Document(&apos;$divide&apos;, [
+                    &apos;$log_count&apos;, &apos;$totalLogs.totalLogs&apos;  // Divide count by total logs
+                ]),
+                100.0  // Multiply by 100 to get the percentage
+            ]),
+            2  // Round to 2 decimal places
+        ]))
+    ),
+
+    // Sort by percentage in descending order
+    new Document(&apos;$sort&apos;, new Document(&apos;percentage&apos;, -1))  // Sort results by percentage in descending order
+]).batchSize(1000)  // Optional: Setting batch size for performance optimization
+
+// Optionally log that the aggregation was executed successfully
+log.info(&quot;Aggregation query executed successfully.&quot;)
+</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Most recent logs" enabled="true">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import com.mongodb.client.MongoCollection
+import org.bson.Document
+
+// Get the MongoDB collection object from the props
+MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;)
+
+// MongoDB aggregation pipeline
+collection.aggregate([
+    // Match the logs with log_level = &apos;ERROR&apos;
+    new Document(&apos;$match&apos;, new Document(&apos;log_level&apos;, &apos;ERROR&apos;)),
+
+    // Sort by timestamp in descending order
+    new Document(&apos;$sort&apos;, new Document(&apos;timestamp&apos;, -1)),
+
+    // Limit the results to 100 documents
+    new Document(&apos;$limit&apos;, 100)
+]).batchSize(1000)  // Optional: Setting batch size for performance optimization</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Most frequent source" enabled="true">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import com.mongodb.client.MongoCollection
+import org.bson.Document
+
+// Get the MongoDB collection object from the props
+MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;)
+
+// MongoDB aggregation pipeline
+collection.aggregate([
+    // Group by source and count occurrences
+    new Document(&apos;$group&apos;, new Document(&apos;_id&apos;, &apos;$source&apos;)
+        .append(&apos;source_count&apos;, new Document(&apos;$sum&apos;, 1))
+    ),
+
+    // Sort by source_count in descending order
+    new Document(&apos;$sort&apos;, new Document(&apos;source_count&apos;, -1)),
+
+    // Limit the results to 10 documents
+    new Document(&apos;$limit&apos;, 10)
+]).batchSize(1000)  // Optional: Setting batch size for performance optimization
+</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+      </hashTree>
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>false</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>false</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>true</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <hostname>true</hostname>
+            <threadCounts>true</threadCounts>
+            <sampleCount>true</sampleCount>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="StatGraphVisualizer" testclass="ResultCollector" testname="Aggregate Graph" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="GraphVisualizer" testclass="ResultCollector" testname="Graph Results" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="ComparisonVisualizer" testclass="ResultCollector" testname="Comparison Assertion Visualizer" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="RespTimeGraphVisualizer" testclass="ResultCollector" testname="Response Time Graph" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <Summariser guiclass="SummariserGui" testclass="Summariser" testname="Generate Summary Results" enabled="true"/>
+      <hashTree/>
+      <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Uniform Random Timer" enabled="true">
+        <stringProp name="ConstantTimer.delay">0</stringProp>
+        <stringProp name="RandomTimer.range">500.0</stringProp>
+      </UniformRandomTimer>
+      <hashTree/>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
