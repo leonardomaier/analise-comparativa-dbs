@@ -53,7 +53,7 @@ props.put(&quot;logs_collection&quot;, collection)</stringProp>
         </JSR223Sampler>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Insert-heavy workload" enabled="false">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Insert-heavy workload">
         <stringProp name="ThreadGroup.num_threads">${__P(number_of_threads)}</stringProp>
         <intProp name="ThreadGroup.ramp_time">1</intProp>
         <stringProp name="ThreadGroup.duration">${__P(duration)}</stringProp>

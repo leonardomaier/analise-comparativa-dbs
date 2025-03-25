@@ -7,8 +7,8 @@ import threading
 import argparse
 import shutil
 
-def monitor_resources(test_duration):
-    with open('metrics_during_stress_test.csv', 'w', newline='') as csvfile:
+def monitor_resources(test_duration, number_of_threads, database_to_test, query_type):
+    with open(f'{database_to_test}_{test_duration}_seconds_{number_of_threads}_threads_{query_type}_workload.csv', 'w', newline='') as csvfile:
         fieldnames = ['Time', 'CPU Usage', 'Memory Usage', 'Disk Read', 'Disk Write', 'Network Sent', 'Network Recv', 'IOPS Read', 'IOPS Write']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
@@ -45,26 +45,24 @@ def monitor_resources(test_duration):
 # Start the stress test and monitor resources simultaneously
 def start_stress_test(test_duration, number_of_threads, database_to_test, query_type):
 
+    output_dir = f'./output/{database_to_test}/{test_duration}_seconds/{number_of_threads}_threads/{query_type}_workload'
+    web_dir = f'./web/{database_to_test}/{test_duration}_seconds/{number_of_threads}_threads/{query_type}_workload'
+
     # Clean up the "web" and "output" folders before running JMeter
-    output_dir = './web'
     if os.path.exists(output_dir):
         shutil.rmtree(output_dir)  # Removes the directory and all its contents
 
     # Clean up the output directory
-    result_output_dir = './output'
-    if os.path.exists(result_output_dir):
-        shutil.rmtree(result_output_dir)  # Removes the directory and all its contents
+    if os.path.exists(web_dir):
+        shutil.rmtree(web_dir)  # Removes the directory and all its contents
 
     # Recreate the folders to avoid errors (JMeter expects them to exist)
-    # os.makedirs(output_dir)
-    # os.makedirs(result_output_dir)
-
-    # Recreate the folder to avoid errors (JMeter expects it to exist)
     os.makedirs(output_dir)
+    os.makedirs(web_dir)
 
     jmx_file_path = os.path.expanduser(f'~/Documents/TCC/analise-comparativa-dbs/test-plans/postgres/{database_to_test}-{query_type}-workload.jmx')
     
-    monitor_thread = threading.Thread(target=monitor_resources, args=(test_duration,))
+    monitor_thread = threading.Thread(target=monitor_resources, args=(test_duration, number_of_threads, database_to_test, query_type))
     monitor_thread.start()
     
     jmeter_command = [
@@ -73,10 +71,10 @@ def start_stress_test(test_duration, number_of_threads, database_to_test, query_
         "-t", 
         jmx_file_path, 
         "-l", 
-        "./output/results.csv", 
+        f'{output_dir}/results.csv', 
         "-e", 
         "-o", 
-        "./web", 
+        web_dir, 
         f'-Jduration={test_duration}',
         f'-Jnumber_of_threads={number_of_threads}',
     ]

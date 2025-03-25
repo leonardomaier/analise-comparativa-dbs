@@ -3,5 +3,5 @@ output/
 web/
 java*
 jmeter.log
-metrics_during_stress_test.csv
+*.csv
 .DS_Store
