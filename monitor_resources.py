@@ -60,7 +60,7 @@ def start_stress_test(test_duration, number_of_threads, database_to_test, query_
     os.makedirs(output_dir)
     os.makedirs(web_dir)
 
-    jmx_file_path = os.path.expanduser(f'~/Documents/TCC/analise-comparativa-dbs/test-plans/postgres/{database_to_test}-{query_type}-workload.jmx')
+    jmx_file_path = os.path.expanduser(f'~/Documents/TCC/analise-comparativa-dbs/test-plans/{database_to_test}/{database_to_test}-{query_type}-workload.jmx')
     
     monitor_thread = threading.Thread(target=monitor_resources, args=(test_duration, number_of_threads, database_to_test, query_type))
     monitor_thread.start()
