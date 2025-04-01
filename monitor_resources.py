@@ -7,6 +7,10 @@ import threading
 import argparse
 import shutil
 
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path='./env')
+
 def monitor_resources(test_duration, number_of_threads, database_to_test, query_type):
     with open(f'{database_to_test}_{test_duration}_seconds_{number_of_threads}_threads_{query_type}_workload.csv', 'w', newline='') as csvfile:
         fieldnames = ['Time', 'CPU Usage', 'Memory Usage', 'Disk Read', 'Disk Write', 'Network Sent', 'Network Recv', 'IOPS Read', 'IOPS Write']
@@ -60,7 +64,9 @@ def start_stress_test(test_duration, number_of_threads, database_to_test, query_
     os.makedirs(output_dir)
     os.makedirs(web_dir)
 
-    jmx_file_path = os.path.expanduser(f'~/Documents/TCC/analise-comparativa-dbs/test-plans/{database_to_test}/{database_to_test}-{query_type}-workload.jmx')
+    database_folder_name = "postgres" if database_to_test == "pg" else "mongo"
+
+    jmx_file_path = os.path.expanduser(f'{os.getenv("REPOSITORY_PATH")}/test-plans/{database_folder_name}/{database_to_test}-{query_type}-workload.jmx')
     
     monitor_thread = threading.Thread(target=monitor_resources, args=(test_duration, number_of_threads, database_to_test, query_type))
     monitor_thread.start()
