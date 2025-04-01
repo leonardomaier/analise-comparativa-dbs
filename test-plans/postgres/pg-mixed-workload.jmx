@@ -14,7 +14,7 @@
         <stringProp name="checkQuery"></stringProp>
         <stringProp name="connectionAge">5000</stringProp>
         <stringProp name="dataSource">jdbcConfig</stringProp>
-        <stringProp name="dbUrl">jdbc:postgresql://localhost:5433/postgres</stringProp>
+        <stringProp name="dbUrl">jdbc:postgresql://localhost:5432/postgres</stringProp>
         <stringProp name="driver">org.postgresql.Driver</stringProp>
         <boolProp name="keepAlive">true</boolProp>
         <stringProp name="password">root</stringProp>
