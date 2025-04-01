@@ -66,7 +66,7 @@ def start_stress_test(test_duration, number_of_threads, database_to_test, query_
 
     database_folder_name = "postgres" if database_to_test == "pg" else "mongo"
 
-    jmx_file_path = os.path.expanduser(f'{os.getenv("REPOSITORY_PATH")}/test-plans/{database_folder_name}/{database_to_test}-{query_type}-workload.jmx')
+    jmx_file_path = os.path.expanduser(f'./test-plans/{database_folder_name}/{database_to_test}-{query_type}-workload.jmx')
     
     monitor_thread = threading.Thread(target=monitor_resources, args=(test_duration, number_of_threads, database_to_test, query_type))
     monitor_thread.start()
