@@ -12,7 +12,15 @@ from dotenv import load_dotenv
 load_dotenv(dotenv_path='./env')
 
 def monitor_resources(test_duration, number_of_threads, database_to_test, query_type):
-    with open(f'{database_to_test}_{test_duration}_seconds_{number_of_threads}_threads_{query_type}_workload.csv', 'w', newline='') as csvfile:
+
+    output_folder_name = './resource-usage'
+     
+    resource_usage_file = f'{output_folder_name}/{database_to_test}_{test_duration}_seconds_{number_of_threads}_threads_{query_type}_workload.csv'
+
+    if not os.path.exists(f'{output_folder_name}/'):
+        os.makedirs(f'{output_folder_name}/')
+
+    with open(resource_usage_file, 'w', newline='') as csvfile:
         fieldnames = ['Time', 'CPU Usage', 'Memory Usage', 'Disk Read', 'Disk Write', 'Network Sent', 'Network Recv', 'IOPS Read', 'IOPS Write']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
