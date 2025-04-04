@@ -55,10 +55,10 @@ def monitor_resources(test_duration, number_of_threads, database_to_test, query_
             time.sleep(1)  # Sleep for 1 second before recording again
 
 # Start the stress test and monitor resources simultaneously
-def start_stress_test(test_duration, number_of_threads, database_to_test, query_type):
+def start_stress_test(test_duration, number_of_threads, ramp_time, database_to_test, query_type):
 
-    output_dir = f'./output/{database_to_test}/{test_duration}_seconds/{number_of_threads}_threads/{query_type}_workload'
-    web_dir = f'./web/{database_to_test}/{test_duration}_seconds/{number_of_threads}_threads/{query_type}_workload'
+    output_dir = f'./output/{database_to_test}/{test_duration}_seconds_duration/{ramp_time}_seconds_ramp/{number_of_threads}_threads/{query_type}_workload'
+    web_dir = f'./web/{database_to_test}/{test_duration}_seconds_duration/{ramp_time}_seconds_ramp/{number_of_threads}_threads/{query_type}_workload'
 
     # Clean up the "web" and "output" folders before running JMeter
     if os.path.exists(output_dir):
@@ -91,6 +91,7 @@ def start_stress_test(test_duration, number_of_threads, database_to_test, query_
         web_dir, 
         f'-Jduration={test_duration}',
         f'-Jnumber_of_threads={number_of_threads}',
+        f'-Jramp_time={ramp_time}'
     ]
     
     subprocess.run(jmeter_command)
@@ -103,9 +104,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run a stress test with specified parameters.")
     parser.add_argument('--duration', type=int, default=30, help="Duration of the test in seconds")
     parser.add_argument('--threads', type=int, default=10, help="Number of threads to simulate in the test")
+    parser.add_argument('--ramp', type=int, default=10, help="Ramp up time")
     parser.add_argument('--database', choices=['pg', 'mongo'], default='pg', help="Database to test (pg or mongo)")
     parser.add_argument('--type', choices=['insert', 'update', 'read', 'mixed'], default='insert', help="Type of query to run in the test")
 
     args = parser.parse_args()
 
-    start_stress_test(args.duration, args.threads, args.database, args.type)
+    start_stress_test(args.duration, args.threads, args.ramp, args.database, args.type)
