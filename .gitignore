@@ -6,3 +6,4 @@ jmeter.log
 *.csv
 .DS_Store
 .env
+__pycache__
