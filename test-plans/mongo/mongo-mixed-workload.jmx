@@ -422,7 +422,7 @@ vars.put(&quot;log_level&quot;, selectedLogLevel)
 vars.put(&quot;source&quot;, selectedSource)</stringProp>
         </JSR223PreProcessor>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Insert logs" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Insert logs">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -466,7 +466,7 @@ for (int i = 0; i &lt; 10; i++) {
 collection.insertMany(logEntries);</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Update single random log" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Update single random log">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -491,7 +491,7 @@ for (Document doc : documents) {
 }</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Delete oldest logs" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Delete oldest logs">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -529,7 +529,7 @@ if (logsToDelete) {
 </stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Filter by log_level INFO" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Filter by log_level INFO">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -546,7 +546,7 @@ Document filter = new Document(&quot;log_level&quot;, &quot;INFO&quot;);
 collection.find(filter).limit(10000);</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Filter by log_level ERROR" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Filter by log_level ERROR">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -563,7 +563,7 @@ Document filter = new Document(&quot;log_level&quot;, &quot;ERROR&quot;);
 collection.find(filter).limit(10000);</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Filter by log_level WARN" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Filter by log_level WARN">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -580,7 +580,7 @@ Document filter = new Document(&quot;log_level&quot;, &quot;WARN&quot;);
 collection.find(filter).limit(10000);</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Group and count by log_level" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Group and count by log_level">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -600,7 +600,7 @@ collection.aggregate([
 ])</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Group and count by log_level and %" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Group and count by log_level and %">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -644,14 +644,14 @@ collection.aggregate([
 
     // Sort by percentage in descending order
     new Document(&apos;$sort&apos;, new Document(&apos;percentage&apos;, -1))  // Sort results by percentage in descending order
-]).batchSize(1000)  // Optional: Setting batch size for performance optimization
+])
 
 // Optionally log that the aggregation was executed successfully
 log.info(&quot;Aggregation query executed successfully.&quot;)
 </stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Most recent logs" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Most recent logs">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -672,10 +672,10 @@ collection.aggregate([
 
     // Limit the results to 100 documents
     new Document(&apos;$limit&apos;, 100)
-]).batchSize(1000)  // Optional: Setting batch size for performance optimization</stringProp>
+])</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Most frequent source" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Most frequent source">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -698,7 +698,7 @@ collection.aggregate([
 
     // Limit the results to 10 documents
     new Document(&apos;$limit&apos;, 10)
-]).batchSize(1000)  // Optional: Setting batch size for performance optimization
+])
 </stringProp>
         </JSR223Sampler>
         <hashTree/>
@@ -999,7 +999,7 @@ collection.aggregate([
         <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
-      <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Uniform Random Timer" enabled="true">
+      <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Uniform Random Timer">
         <stringProp name="ConstantTimer.delay">0</stringProp>
         <stringProp name="RandomTimer.range">500.0</stringProp>
       </UniformRandomTimer>
