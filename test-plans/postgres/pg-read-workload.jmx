@@ -188,7 +188,7 @@ WHERE timestamp IN (SELECT timestamp FROM cte);</stringProp>
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Filter by log_level INFO" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Filter by log_level INFO">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Select Statement</stringProp>
           <stringProp name="query">SELECT * FROM &quot;analise-comparativa-dbs&quot;.logs
@@ -202,7 +202,7 @@ WHERE log_level = &apos;INFO&apos; LIMIT 10000;</stringProp>
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Filter by log_level ERROR" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Filter by log_level ERROR">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Select Statement</stringProp>
           <stringProp name="query">SELECT * FROM &quot;analise-comparativa-dbs&quot;.logs
@@ -216,7 +216,7 @@ WHERE log_level = &apos;ERROR&apos; LIMIT 10000;;</stringProp>
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Filter by log_level WARN" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Filter by log_level WARN">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Select Statement</stringProp>
           <stringProp name="query">SELECT * FROM &quot;analise-comparativa-dbs&quot;.logs
@@ -230,7 +230,7 @@ WHERE log_level = &apos;WARN&apos; LIMIT 10000;;</stringProp>
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Group and count by log_level" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Group and count by log_level">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Select Statement</stringProp>
           <stringProp name="query">SELECT log_level, COUNT(*) AS log_count
@@ -246,14 +246,17 @@ ORDER BY log_count DESC;</stringProp>
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Group and count by log_level and %" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Group and count by log_level and %">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Select Statement</stringProp>
-          <stringProp name="query">SELECT log_level,
+          <stringProp name="query">WITH total AS (
+  SELECT COUNT(*) AS total_logs
+  FROM &quot;analise-comparativa-dbs&quot;.logs
+)
+SELECT log_level,
        COUNT(*) AS log_count,
        ROUND((COUNT(*) * 100.0 / total.total_logs), 2) AS percentage
-FROM &quot;analise-comparativa-dbs&quot;.logs,
-     (SELECT COUNT(*) AS total_logs FROM &quot;analise-comparativa-dbs&quot;.logs) total
+FROM &quot;analise-comparativa-dbs&quot;.logs, total
 GROUP BY log_level, total.total_logs
 ORDER BY percentage DESC;</stringProp>
           <stringProp name="queryArguments"></stringProp>
@@ -504,7 +507,7 @@ vars.put(&quot;source&quot;, selectedSource)</stringProp>
         </JSR223PreProcessor>
         <hashTree/>
       </hashTree>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
@@ -800,7 +803,7 @@ vars.put(&quot;source&quot;, selectedSource)</stringProp>
         <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
-      <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Uniform Random Timer" enabled="true">
+      <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Uniform Random Timer">
         <stringProp name="ConstantTimer.delay">0</stringProp>
         <stringProp name="RandomTimer.range">500.0</stringProp>
       </UniformRandomTimer>

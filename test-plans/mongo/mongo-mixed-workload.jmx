@@ -392,7 +392,7 @@ collection.aggregate([
         </JSR223Sampler>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Mixed workload">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Mixed workload" enabled="true">
         <stringProp name="ThreadGroup.num_threads">${__P(number_of_threads)}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">${__P(ramp_time)}</stringProp>
         <stringProp name="ThreadGroup.duration">${__P(duration)}</stringProp>
@@ -543,7 +543,7 @@ MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quo
 Document filter = new Document(&quot;log_level&quot;, &quot;INFO&quot;);
 
 // Find all documents matching the filter
-collection.find(filter).limit(10000);</stringProp>
+collection.find(filter).limit(10000).into(new ArrayList&lt;&gt;());</stringProp>
         </JSR223Sampler>
         <hashTree/>
         <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Filter by log_level ERROR" enabled="true">
@@ -560,10 +560,10 @@ MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quo
 Document filter = new Document(&quot;log_level&quot;, &quot;ERROR&quot;);
 
 // Find all documents matching the filter
-collection.find(filter).limit(10000);</stringProp>
+collection.find(filter).limit(10000).into(new ArrayList&lt;&gt;());</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Filter by log_level WARN" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Filter by log_level WARN">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -577,10 +577,10 @@ MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quo
 Document filter = new Document(&quot;log_level&quot;, &quot;WARN&quot;);
 
 // Find all documents matching the filter
-collection.find(filter).limit(10000);</stringProp>
+collection.find(filter).limit(10000).into(new ArrayList&lt;&gt;());</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Group and count by log_level" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Group and count by log_level">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -597,10 +597,10 @@ collection.aggregate([
     
     // Sort by log_count in descending order
     new Document(&apos;$sort&apos;, new Document(&apos;log_count&apos;, -1))
-])</stringProp>
+]).into(new ArrayList&lt;&gt;());</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Group and count by log_level and %" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Group and count by log_level and %">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -608,50 +608,60 @@ collection.aggregate([
           <stringProp name="script">import com.mongodb.client.MongoCollection
 import org.bson.Document
 
-// Get the MongoDB collection object from the props
 MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;)
 
-// MongoDB aggregation pipeline
-collection.aggregate([
-    // Group by log_level and count occurrences
-    new Document(&apos;$group&apos;, new Document(&apos;_id&apos;, &apos;$log_level&apos;)
-        .append(&apos;log_count&apos;, new Document(&apos;$sum&apos;, 1))
+def results = collection.aggregate([
+    // 1. Match apenas os log_levels existentes (força o uso de índice em log_level, se houver)
+    new Document(&quot;\$match&quot;, new Document(&quot;log_level&quot;, new Document(&quot;\$in&quot;, [&quot;INFO&quot;, &quot;ERROR&quot;, &quot;WARN&quot;, &quot;DEBUG&quot;]))),
+
+    // 2. Agrupa por log_level e conta
+    new Document(&quot;\$group&quot;, new Document(&quot;_id&quot;, &quot;\$log_level&quot;)
+        .append(&quot;log_count&quot;, new Document(&quot;\$sum&quot;, 1))
     ),
 
-    // Lookup to calculate the total logs count
-    new Document(&apos;$lookup&apos;, [
-        &quot;from&quot;: &quot;logs&quot;,  // The same collection we&apos;re working with
-        &quot;pipeline&quot;: [new Document(&apos;$count&apos;, &quot;totalLogs&quot;)],  // Counting total logs in the collection
-        &quot;as&quot;: &quot;totalLogs&quot;  // The result will be put into the &apos;totalLogs&apos; field
+    // 3. Usando $facet para calcular total e fazer o join lógico
+    new Document(&quot;\$facet&quot;, [
+        &quot;logsByLevel&quot;: [
+            new Document(&quot;\$sort&quot;, new Document(&quot;log_count&quot;, -1)) // ordena dentro do facet
+        ],
+        &quot;total&quot;: [
+            new Document(&quot;\$group&quot;, new Document(&quot;_id&quot;, null)
+                .append(&quot;total_logs&quot;, new Document(&quot;\$sum&quot;, &quot;\$log_count&quot;))
+            )
+        ]
     ]),
 
-    // Unwind the totalLogs to extract the count value
-    new Document(&apos;$unwind&apos;, &apos;$totalLogs&apos;),
+    // 4. Junta o resultado do facet em único documento
+    new Document(&quot;\$project&quot;, new Document(&quot;logsByLevel&quot;, &quot;\$logsByLevel&quot;)
+        .append(&quot;total&quot;, new Document(&quot;\$arrayElemAt&quot;, [&quot;\$total&quot;, 0]))
+    ),
 
-    // Project the final result, including the percentage
-    new Document(&apos;$project&apos;, new Document(&apos;log_level&apos;, &apos;$_id&apos;)
-        .append(&apos;log_count&apos;, &apos;$log_count&apos;)
-        .append(&apos;percentage&apos;, new Document(&apos;$round&apos;, [
-            new Document(&apos;$multiply&apos;, [
-                new Document(&apos;$divide&apos;, [
-                    &apos;$log_count&apos;, &apos;$totalLogs.totalLogs&apos;  // Divide count by total logs
-                ]),
-                100.0  // Multiply by 100 to get the percentage
+    // 5. Desconstrói logsByLevel para aplicar a porcentagem
+    new Document(&quot;\$unwind&quot;, &quot;\$logsByLevel&quot;),
+
+    // 6. Projeta os campos finais com percentual
+    new Document(&quot;\$project&quot;, new Document(&quot;log_level&quot;, &quot;\$logsByLevel._id&quot;)
+        .append(&quot;log_count&quot;, &quot;\$logsByLevel.log_count&quot;)
+        .append(&quot;percentage&quot;, new Document(&quot;\$round&quot;, [
+            new Document(&quot;\$multiply&quot;, [
+                new Document(&quot;\$divide&quot;, [&quot;\$logsByLevel.log_count&quot;, &quot;\$total.total_logs&quot;]),
+                100
             ]),
-            2  // Round to 2 decimal places
+            2
         ]))
     ),
 
-    // Sort by percentage in descending order
-    new Document(&apos;$sort&apos;, new Document(&apos;percentage&apos;, -1))  // Sort results by percentage in descending order
-])
+    // 7. Ordena final por percentual
+    new Document(&quot;\$sort&quot;, new Document(&quot;percentage&quot;, -1))
 
-// Optionally log that the aggregation was executed successfully
-log.info(&quot;Aggregation query executed successfully.&quot;)
+]).into(new ArrayList&lt;&gt;())
+
+// (Opcional) log de sucesso
+log.info(&quot;Aggregation with match and facet executed.&quot;)
 </stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Most recent logs" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Most recent logs">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -672,7 +682,7 @@ collection.aggregate([
 
     // Limit the results to 100 documents
     new Document(&apos;$limit&apos;, 100)
-])</stringProp>
+]).into(new ArrayList&lt;&gt;());</stringProp>
         </JSR223Sampler>
         <hashTree/>
         <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Most frequent source" enabled="true">
@@ -698,7 +708,7 @@ collection.aggregate([
 
     // Limit the results to 10 documents
     new Document(&apos;$limit&apos;, 10)
-])
+]).into(new ArrayList&lt;&gt;());
 </stringProp>
         </JSR223Sampler>
         <hashTree/>
