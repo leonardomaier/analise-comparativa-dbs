@@ -1,8 +1,6 @@
 import os
 import re
-import json
 import subprocess
-import pandas as pd
 
 result_dirs = [
     "./web/pg/1800_seconds_duration/60_seconds_ramp/100_threads/insert_workload",
