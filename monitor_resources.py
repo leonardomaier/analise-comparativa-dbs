@@ -11,6 +11,16 @@ from dotenv import load_dotenv
 
 load_dotenv(dotenv_path='./env')
 
+def read_diskstats(device_name):
+    with open("/proc/diskstats") as f:
+        for line in f:
+            parts = line.strip().split()
+            if parts[2] == device_name:
+                read_ios = int(parts[3])
+                write_ios = int(parts[7])
+                return read_ios, write_ios
+    return None, None 
+
 def monitor_resources(test_duration, number_of_threads, database_to_test, query_type):
 
     output_folder_name = './resource-usage'
@@ -25,7 +35,8 @@ def monitor_resources(test_duration, number_of_threads, database_to_test, query_
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
 
-        prev_disk_io = psutil.disk_io_counters(perdisk=True)
+        # prev_disk_io = psutil.disk_io_counters(perdisk=True)
+        prev_read, prev_write = read_diskstats('md2')
 
         device_name = "md2"
 
@@ -37,14 +48,19 @@ def monitor_resources(test_duration, number_of_threads, database_to_test, query_
             disk_info = psutil.disk_io_counters(perdisk=True)
             network_info = psutil.net_io_counters()
 
-            read_iops = disk_info[device_name].read_count - prev_disk_io[device_name].read_count
-            write_iops = disk_info[device_name].write_count - prev_disk_io[device_name].write_count
+            curr_read, curr_write = read_diskstats('md2')
+
+            read_iops = curr_read - prev_read
+            write_iops = curr_write - prev_write
+
+            # read_iops = disk_info[device_name].read_count - prev_disk_io[device_name].read_count
+            # write_iops = disk_info[device_name].write_count - prev_disk_io[device_name].write_count
             writer.writerow({
                 'Time': time.time(),
                 'CPU Usage': cpu_usage,
                 'Memory Usage': memory_info.percent,
-                'Disk Read': disk_info[device_name].read_bytes,
-                'Disk Write': disk_info[device_name].write_bytes,
+                'Disk Read': curr_read,  # cumulative reads
+                'Disk Write': curr_write,  # cumulative writes
                 'Network Sent': network_info.bytes_sent,
                 'Network Recv': network_info.bytes_recv,
                 'IOPS Read': read_iops,
