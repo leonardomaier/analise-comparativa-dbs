@@ -20,7 +20,7 @@
         </elementProp>
       </SetupThreadGroup>
       <hashTree>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Connect to database" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Connect to database">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -31,7 +31,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;
 
-String mongoUri = &quot;mongodb://localhost:27017&quot;
+String mongoUri = &quot;mongodb://localhost:27017/?maxPoolSize=500&quot;
 MongoClientURI uri = new MongoClientURI(mongoUri)
 
 MongoClient mongoClient = new MongoClient(uri)
@@ -41,15 +41,41 @@ MongoDatabase database =  mongoClient.getDatabase(&quot;analise-comparativa-dbs&
 String collectionName = &quot;logs&quot;
 
 // Drop collection if it exists
-database.getCollection(collectionName).drop()
+// database.getCollection(collectionName).drop()
 
 // Explicitly create the collection (without inserting data)
-database.createCollection(collectionName)
+// database.createCollection(collectionName)
 
 // Get logs collection
 MongoCollection&lt;Document&gt; collection = database.getCollection(collectionName);
 
-props.put(&quot;logs_collection&quot;, collection)</stringProp>
+props.put(&quot;logs_collection&quot;, collection)
+
+props.put(&quot;mongo_client&quot;, mongoClient)</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+      </hashTree>
+      <PostThreadGroup guiclass="PostThreadGroupGui" testclass="PostThreadGroup" testname="tearDown Thread Group">
+        <intProp name="ThreadGroup.num_threads">1</intProp>
+        <intProp name="ThreadGroup.ramp_time">1</intProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </PostThreadGroup>
+      <hashTree>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Close connections">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">def mongoClient = props.get(&quot;mongo_client&quot;)
+if (mongoClient != null) {
+    mongoClient.close()
+    println &quot;MongoClient closed.&quot;
+}</stringProp>
         </JSR223Sampler>
         <hashTree/>
       </hashTree>
@@ -128,7 +154,7 @@ vars.put(&quot;source&quot;, selectedSource)</stringProp>
         </JSR223PreProcessor>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Update-heavy workload" enabled="true">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Update-heavy workload">
         <stringProp name="ThreadGroup.num_threads">${__P(number_of_threads)}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">${__P(ramp_time)}</stringProp>
         <stringProp name="ThreadGroup.duration">${__P(duration)}</stringProp>
@@ -141,7 +167,7 @@ vars.put(&quot;source&quot;, selectedSource)</stringProp>
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Update single random log" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Update single random log">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -166,42 +192,25 @@ for (Document doc : documents) {
 }</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Delete oldest logs" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Delete oldest logs">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
           <stringProp name="cacheKey">true</stringProp>
-          <stringProp name="script">import com.mongodb.client.MongoCollection
-import org.bson.Document
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
-import com.mongodb.client.MongoClients
-import com.mongodb.client.model.Filters
-import com.mongodb.client.model.Sorts
+          <stringProp name="script">import com.mongodb.client.model.Filters
 
-MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;)
+def collection = props.get(&quot;logs_collection&quot;)
 
-def formatter = DateTimeFormatter.ISO_DATE_TIME
+def idsToDelete = collection.find().limit(2)
+    .into(new ArrayList&lt;&gt;())
+    .collect { it.getObjectId(&quot;_id&quot;) }
 
-def minTimestampString = collection.find().sort(Sorts.ascending(&quot;timestamp&quot;)).limit(1).first()?.timestamp
-if (minTimestampString == null) {
-    println &quot;Nenhum timestamp encontrado.&quot;
-    return
-}
-def minTimestamp = LocalDateTime.parse(minTimestampString, formatter)
-
-def targetTimestamp = minTimestamp.plus(15, ChronoUnit.DAYS)
-
-def logsToDelete = collection.find(Filters.lt(&quot;timestamp&quot;, targetTimestamp.toString()))
-                            .sort(Sorts.ascending(&quot;timestamp&quot;))
-                            .limit(10)
-                            .collect { it.timestamp }
-
-if (logsToDelete) {
-    collection.deleteMany(Filters.in(&quot;timestamp&quot;, logsToDelete))
-}
-</stringProp>
+if (idsToDelete) {
+    collection.deleteMany(Filters.in(&quot;_id&quot;, idsToDelete))
+    println &quot;Deletados ${idsToDelete.size()} documentos.&quot;
+} else {
+    println &quot;Nenhum documento encontrado para deletar.&quot;
+}</stringProp>
         </JSR223Sampler>
         <hashTree/>
       </hashTree>
@@ -703,7 +712,7 @@ collection.aggregate([
         </JSR223Sampler>
         <hashTree/>
       </hashTree>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
