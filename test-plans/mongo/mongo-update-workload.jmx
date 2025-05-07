@@ -9,7 +9,7 @@
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
     </TestPlan>
     <hashTree>
-      <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="setUp Thread Group" enabled="false">
+      <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="setUp Thread Group">
         <intProp name="ThreadGroup.num_threads">1</intProp>
         <intProp name="ThreadGroup.ramp_time">1</intProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
@@ -128,7 +128,7 @@ vars.put(&quot;source&quot;, selectedSource)</stringProp>
         </JSR223PreProcessor>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Update-heavy workload">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Update-heavy workload" enabled="true">
         <stringProp name="ThreadGroup.num_threads">${__P(number_of_threads)}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">${__P(ramp_time)}</stringProp>
         <stringProp name="ThreadGroup.duration">${__P(duration)}</stringProp>

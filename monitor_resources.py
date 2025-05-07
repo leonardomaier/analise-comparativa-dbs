@@ -11,16 +11,6 @@ from dotenv import load_dotenv
 
 load_dotenv(dotenv_path='./env')
 
-def read_diskstats(device_name):
-    with open("/proc/diskstats") as f:
-        for line in f:
-            parts = line.strip().split()
-            if parts[2] == device_name:
-                read_ios = int(parts[3])
-                write_ios = int(parts[7])
-                return read_ios, write_ios
-    return None, None 
-
 def monitor_resources(test_duration, number_of_threads, database_to_test, query_type):
 
     output_folder_name = './resource-usage'
@@ -31,44 +21,21 @@ def monitor_resources(test_duration, number_of_threads, database_to_test, query_
         os.makedirs(f'{output_folder_name}/')
 
     with open(resource_usage_file, 'w', newline='') as csvfile:
-        fieldnames = ['Time', 'CPU Usage', 'Memory Usage', 'Disk Read', 'Disk Write', 'Network Sent', 'Network Recv', 'IOPS Read', 'IOPS Write']
+        fieldnames = ['Time', 'CPU Usage', 'Memory Usage']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-
-        # prev_disk_io = psutil.disk_io_counters(perdisk=True)
-        prev_read, prev_write = read_diskstats('md2')
-
-        device_name = "md2"
 
         start_time = time.time()
 
         while time.time() - start_time < test_duration:
-            cpu_usage = psutil.cpu_percent(interval=1)
+            cpu_usage = psutil.cpu_percent(interval=None)
             memory_info = psutil.virtual_memory()
-            disk_info = psutil.disk_io_counters(perdisk=True)
-            network_info = psutil.net_io_counters()
 
-            curr_read, curr_write = read_diskstats('md2')
-
-            read_iops = curr_read - prev_read
-            write_iops = curr_write - prev_write
-
-            # read_iops = disk_info[device_name].read_count - prev_disk_io[device_name].read_count
-            # write_iops = disk_info[device_name].write_count - prev_disk_io[device_name].write_count
             writer.writerow({
                 'Time': time.time(),
                 'CPU Usage': cpu_usage,
-                'Memory Usage': memory_info.percent,
-                'Disk Read': curr_read,  # cumulative reads
-                'Disk Write': curr_write,  # cumulative writes
-                'Network Sent': network_info.bytes_sent,
-                'Network Recv': network_info.bytes_recv,
-                'IOPS Read': read_iops,
-                'IOPS Write': write_iops
+                'Memory Usage': memory_info.percent
             })
-
-            # Update previous disk I/O counters for the next iteration
-            prev_disk_io = disk_info
             
             time.sleep(1)  # Sleep for 1 second before recording again
 
