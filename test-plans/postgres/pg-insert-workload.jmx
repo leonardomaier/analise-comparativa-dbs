@@ -69,7 +69,7 @@ CREATE INDEX idx_logs_log_level ON &quot;analise-comparativa-dbs&quot;.logs(log_
         </JDBCSampler>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Insert-heavy workload">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Insert-heavy workload" enabled="true">
         <stringProp name="ThreadGroup.num_threads">${__P(number_of_threads)}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">${__P(ramp_time)}</stringProp>
         <stringProp name="ThreadGroup.duration">${__P(duration)}</stringProp>
@@ -82,7 +82,7 @@ CREATE INDEX idx_logs_log_level ON &quot;analise-comparativa-dbs&quot;.logs(log_
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Insert logs" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Insert logs">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="query">INSERT INTO &quot;analise-comparativa-dbs&quot;.logs (timestamp, log_level, message, source, test_id)
 SELECT
@@ -92,7 +92,7 @@ SELECT
     &apos;${log_level}&apos;,
     &apos;Random log message: ${__Random(1,1000,)}&apos;,     
     &apos;Source: ${source}&apos;,             
-    ${__Random(1,10,)}                          
+    ${__threadNum}                          
 FROM generate_series(1,10);
 </stringProp>
           <stringProp name="queryArguments"></stringProp>
@@ -158,7 +158,7 @@ vars.put(&quot;source&quot;, selectedSource)</stringProp>
         <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
-      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report">
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>

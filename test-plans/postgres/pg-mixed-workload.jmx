@@ -39,7 +39,7 @@
         </elementProp>
       </SetupThreadGroup>
       <hashTree>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Create fresh tables">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Create fresh tables" enabled="true">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Update Statement</stringProp>
           <stringProp name="query">DROP SCHEMA IF EXISTS &quot;analise-comparativa-dbs&quot; CASCADE;
@@ -82,7 +82,7 @@ CREATE INDEX idx_logs_log_level ON &quot;analise-comparativa-dbs&quot;.logs(log_
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Insert logs" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Insert logs">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="query">INSERT INTO &quot;analise-comparativa-dbs&quot;.logs (timestamp, log_level, message, source, test_id)
 SELECT
@@ -92,7 +92,7 @@ SELECT
     &apos;${log_level}&apos;,
     &apos;Random log message: ${__Random(1,1000,)}&apos;,     
     &apos;Source: ${source}&apos;,             
-    ${__Random(1,10,)}                          
+    ${__threadNum}                          
 FROM generate_series(1,10);
 </stringProp>
           <stringProp name="queryArguments"></stringProp>

@@ -20,7 +20,7 @@
         </elementProp>
       </SetupThreadGroup>
       <hashTree>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Connect to database">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Connect to database" enabled="true">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -116,7 +116,7 @@ vars.put(&quot;log_level&quot;, selectedLogLevel)
 vars.put(&quot;source&quot;, selectedSource)</stringProp>
         </JSR223PreProcessor>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Insert logs" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Insert logs">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -151,7 +151,7 @@ for (int i = 0; i &lt; 10; i++) {
         .append(&quot;log_level&quot;, vars.get(&quot;log_level&quot;))  // Get JMeter variable
         .append(&quot;message&quot;, &quot;Random log message: &quot; + (rand.nextInt(1000) + 1))
         .append(&quot;source&quot;, &quot;Source: &quot; + vars.get(&quot;source&quot;))
-        .append(&quot;test_id&quot;, rand.nextInt(10) + 1);
+        .append(&quot;test_id&quot;, ctx.getThreadNum());
 
     logEntries.add(logEntry);
 }
@@ -160,7 +160,7 @@ for (int i = 0; i &lt; 10; i++) {
 collection.insertMany(logEntries);</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Update single random log">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Update single random log" enabled="true">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -185,7 +185,7 @@ for (Document doc : documents) {
 }</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Delete oldest logs">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Delete oldest logs" enabled="true">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -389,7 +389,7 @@ collection.aggregate([
         </JSR223Sampler>
         <hashTree/>
       </hashTree>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
