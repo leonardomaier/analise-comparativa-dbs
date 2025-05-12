@@ -5,6 +5,8 @@
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
         <collectionProp name="Arguments.arguments"/>
       </elementProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
     </TestPlan>
     <hashTree>
       <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="setUp Thread Group">
@@ -90,7 +92,29 @@ if (mongoClient != null) {
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Update single random log" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Delete oldest logs">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import com.mongodb.client.model.Filters
+import org.bson.Document
+
+def collection = props.get(&quot;logs_collection&quot;)
+
+int threadId = ctx.getThreadNum()
+
+def idsToDelete = collection.find(new Document(&quot;test_id&quot;, threadId))
+    .limit(2)
+    .into(new ArrayList&lt;&gt;())
+    .collect { it.getObjectId(&quot;_id&quot;) }
+
+if (idsToDelete) {
+    collection.deleteMany(Filters.in(&quot;_id&quot;, idsToDelete))
+}</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Update single random log">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -103,35 +127,20 @@ import java.util.Random;
 MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;);
 Random rand = new Random();
 
+int threadId = ctx.getThreadNum()  // Get current thread ID
+
 // Find the first 100 documents by natural order (insertion order)
-List&lt;Document&gt; documents = collection.find().limit(100).into(new ArrayList&lt;&gt;());
+List&lt;Document&gt; documents = collection.find(new Document(&quot;test_id&quot;, threadId))
+    .limit(100)
+    .into(new ArrayList&lt;&gt;())
 
 // Loop over the documents and update them
 for (Document doc : documents) {
-    int randomValue = rand.nextInt(1000);  // Generate a random number between 0 and 999
-    collection.updateOne(new Document(&quot;_id&quot;, doc.get(&quot;_id&quot;)), 
-                          Updates.set(&quot;message&quot;, &quot;Updated log message: &quot; + randomValue));
-    log.info(&quot;Updated document with _id: &quot; + doc.get(&quot;_id&quot;) + &quot; to random value: &quot; + randomValue);
-}</stringProp>
-        </JSR223Sampler>
-        <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Delete oldest logs">
-          <stringProp name="scriptLanguage">groovy</stringProp>
-          <stringProp name="parameters"></stringProp>
-          <stringProp name="filename"></stringProp>
-          <stringProp name="cacheKey">true</stringProp>
-          <stringProp name="script">import com.mongodb.client.model.Filters
-
-def collection = props.get(&quot;logs_collection&quot;)
-
-def idsToDelete = collection.find().limit(2)
-    .into(new ArrayList&lt;&gt;())
-    .collect { it.getObjectId(&quot;_id&quot;) }
-
-if (idsToDelete) {
-    collection.deleteMany(Filters.in(&quot;_id&quot;, idsToDelete))
-} else {
-    println &quot;Nenhum documento encontrado para deletar.&quot;
+    int randomValue = rand.nextInt(1000)
+    collection.updateOne(
+        new Document(&quot;_id&quot;, doc.get(&quot;_id&quot;)),
+        Updates.set(&quot;message&quot;, &quot;Updated log message: &quot; + randomValue)
+    )
 }</stringProp>
         </JSR223Sampler>
         <hashTree/>
@@ -171,7 +180,7 @@ if (idsToDelete) {
         <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
-      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>

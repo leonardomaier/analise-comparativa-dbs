@@ -160,7 +160,7 @@ for (int i = 0; i &lt; 10; i++) {
 collection.insertMany(logEntries);</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Update single random log" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Update single random log">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -173,35 +173,42 @@ import java.util.Random;
 MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;);
 Random rand = new Random();
 
+int threadId = ctx.getThreadNum()  // Get current thread ID
+
 // Find the first 100 documents by natural order (insertion order)
-List&lt;Document&gt; documents = collection.find().limit(100).into(new ArrayList&lt;&gt;());
+List&lt;Document&gt; documents = collection.find(new Document(&quot;test_id&quot;, threadId))
+    .limit(100)
+    .into(new ArrayList&lt;&gt;())
 
 // Loop over the documents and update them
 for (Document doc : documents) {
-    int randomValue = rand.nextInt(1000);  // Generate a random number between 0 and 999
-    collection.updateOne(new Document(&quot;_id&quot;, doc.get(&quot;_id&quot;)), 
-                          Updates.set(&quot;message&quot;, &quot;Updated log message: &quot; + randomValue));
-    log.info(&quot;Updated document with _id: &quot; + doc.get(&quot;_id&quot;) + &quot; to random value: &quot; + randomValue);
+    int randomValue = rand.nextInt(1000)
+    collection.updateOne(
+        new Document(&quot;_id&quot;, doc.get(&quot;_id&quot;)),
+        Updates.set(&quot;message&quot;, &quot;Updated log message: &quot; + randomValue)
+    )
 }</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Delete oldest logs" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Delete oldest logs">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
           <stringProp name="cacheKey">true</stringProp>
           <stringProp name="script">import com.mongodb.client.model.Filters
+import org.bson.Document
 
 def collection = props.get(&quot;logs_collection&quot;)
 
-def idsToDelete = collection.find().limit(2)
+int threadId = ctx.getThreadNum()
+
+def idsToDelete = collection.find(new Document(&quot;test_id&quot;, threadId))
+    .limit(2)
     .into(new ArrayList&lt;&gt;())
     .collect { it.getObjectId(&quot;_id&quot;) }
 
 if (idsToDelete) {
     collection.deleteMany(Filters.in(&quot;_id&quot;, idsToDelete))
-} else {
-    println &quot;Nenhum documento encontrado para deletar.&quot;
 }</stringProp>
         </JSR223Sampler>
         <hashTree/>
@@ -389,7 +396,7 @@ collection.aggregate([
         </JSR223Sampler>
         <hashTree/>
       </hashTree>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>

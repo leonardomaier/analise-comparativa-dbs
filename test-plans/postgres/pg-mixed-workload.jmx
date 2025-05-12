@@ -69,7 +69,7 @@ CREATE INDEX idx_logs_log_level ON &quot;analise-comparativa-dbs&quot;.logs(log_
         </JDBCSampler>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Mixed workload" enabled="true">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Mixed workload">
         <stringProp name="ThreadGroup.num_threads">${__P(number_of_threads)}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">${__P(ramp_time)}</stringProp>
         <stringProp name="ThreadGroup.duration">${__P(duration)}</stringProp>
@@ -82,7 +82,7 @@ CREATE INDEX idx_logs_log_level ON &quot;analise-comparativa-dbs&quot;.logs(log_
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Insert logs">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Insert logs" enabled="true">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="query">INSERT INTO &quot;analise-comparativa-dbs&quot;.logs (timestamp, log_level, message, source, test_id)
 SELECT
@@ -105,16 +105,17 @@ FROM generate_series(1,10);
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Update single random log" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Update single random log">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="query">UPDATE &quot;analise-comparativa-dbs&quot;.logs
 SET message = &apos;Updated log message: &apos; || FLOOR(RANDOM() * 1000)
-WHERE id IN (
-    SELECT id
-    FROM &quot;analise-comparativa-dbs&quot;.logs
-    LIMIT 100
-);
-</stringProp>
+WHERE test_id = ${__threadNum}
+AND id &gt;= (
+SELECT MIN(id) FROM &quot;analise-comparativa-dbs&quot;.logs WHERE test_id = ${__threadNum}
+)
+AND id &lt; (
+SELECT MIN(id) FROM &quot;analise-comparativa-dbs&quot;.logs WHERE test_id = ${__threadNum}
+) + 100;</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
           <stringProp name="queryType">Update Statement</stringProp>
@@ -125,14 +126,16 @@ WHERE id IN (
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Delete oldest logs" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Delete oldest logs">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="query">DELETE FROM &quot;analise-comparativa-dbs&quot;.logs
-WHERE id IN (
-  SELECT id FROM &quot;analise-comparativa-dbs&quot;.logs
-  ORDER BY id
-  LIMIT 2
-);</stringProp>
+WHERE test_id = ${__threadNum}
+AND id &gt;= (
+SELECT MIN(id) FROM &quot;analise-comparativa-dbs&quot;.logs WHERE test_id = ${__threadNum}
+)
+AND id &lt; (
+SELECT MIN(id) FROM &quot;analise-comparativa-dbs&quot;.logs WHERE test_id = ${__threadNum}
+) + 2;</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
           <stringProp name="queryType">Update Statement</stringProp>
@@ -274,7 +277,7 @@ vars.put(&quot;source&quot;, selectedSource)</stringProp>
         </JSR223PreProcessor>
         <hashTree/>
       </hashTree>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
