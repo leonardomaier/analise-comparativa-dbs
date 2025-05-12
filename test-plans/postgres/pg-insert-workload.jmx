@@ -58,7 +58,8 @@ CREATE TABLE &quot;analise-comparativa-dbs&quot;.logs (
 );
 
 CREATE INDEX idx_logs_timestamp ON &quot;analise-comparativa-dbs&quot;.logs(timestamp);
-CREATE INDEX idx_logs_log_level ON &quot;analise-comparativa-dbs&quot;.logs(log_level);</stringProp>
+CREATE INDEX idx_logs_log_level ON &quot;analise-comparativa-dbs&quot;.logs(log_level);
+CREATE INDEX idx_logs_test_id ON &quot;analise-comparativa-dbs&quot;.logs(test_id);</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
           <stringProp name="variableNames"></stringProp>
@@ -82,7 +83,7 @@ CREATE INDEX idx_logs_log_level ON &quot;analise-comparativa-dbs&quot;.logs(log_
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Insert logs">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Insert logs" enabled="true">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="query">INSERT INTO &quot;analise-comparativa-dbs&quot;.logs (timestamp, log_level, message, source, test_id)
 SELECT

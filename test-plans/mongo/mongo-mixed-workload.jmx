@@ -20,7 +20,7 @@
         </elementProp>
       </SetupThreadGroup>
       <hashTree>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Connect to database" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Connect to database">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -54,6 +54,9 @@ collection.createIndex(new Document(&quot;timestamp&quot;, 1))
 
 // Índice simples em log_level
 collection.createIndex(new Document(&quot;log_level&quot;, 1))
+
+// Índice simples em test_id
+collection.createIndex(new Document(&quot;test_id&quot;, 1))
 
 props.put(&quot;logs_collection&quot;, collection)
 
@@ -431,7 +434,7 @@ collection.aggregate([
         <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
-      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
