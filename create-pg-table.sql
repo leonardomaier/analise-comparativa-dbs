@@ -12,3 +12,6 @@ CREATE TABLE "analise-comparativa-dbs".logs (
     source VARCHAR(255) NOT NULL,
     test_id BIGINT NOT NULL
 );
+
+CREATE INDEX idx_logs_timestamp ON "analise-comparativa-dbs".logs(timestamp);
+CREATE INDEX idx_logs_log_level ON "analise-comparativa-dbs".logs(log_level);

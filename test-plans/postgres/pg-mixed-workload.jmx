@@ -28,7 +28,7 @@
         <stringProp name="connectionProperties"></stringProp>
       </JDBCDataSource>
       <hashTree/>
-      <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="setUp Thread Group">
+      <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="setUp Thread Group" enabled="true">
         <intProp name="ThreadGroup.num_threads">1</intProp>
         <intProp name="ThreadGroup.ramp_time">1</intProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
@@ -65,7 +65,7 @@ CREATE TABLE &quot;analise-comparativa-dbs&quot;.logs (
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Ignore results">
+        <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Ignore results" enabled="true">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -130,15 +130,14 @@ WHERE id IN (
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Delete oldest logs" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Delete oldest logs">
           <stringProp name="dataSource">jdbcConfig</stringProp>
-          <stringProp name="query">WITH cte AS (
-    SELECT ctid
-    FROM &quot;analise-comparativa-dbs&quot;.logs
-    LIMIT 2
-)
-DELETE FROM &quot;analise-comparativa-dbs&quot;.logs
-WHERE ctid IN (SELECT ctid FROM cte);</stringProp>
+          <stringProp name="query">DELETE FROM &quot;analise-comparativa-dbs&quot;.logs
+WHERE id IN (
+  SELECT id FROM &quot;analise-comparativa-dbs&quot;.logs
+  ORDER BY id
+  LIMIT 2
+);</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
           <stringProp name="queryType">Update Statement</stringProp>
@@ -280,7 +279,7 @@ vars.put(&quot;source&quot;, selectedSource)</stringProp>
         </JSR223PreProcessor>
         <hashTree/>
       </hashTree>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>

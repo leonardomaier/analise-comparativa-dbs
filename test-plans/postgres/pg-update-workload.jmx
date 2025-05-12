@@ -5,6 +5,8 @@
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
         <collectionProp name="Arguments.arguments"/>
       </elementProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
     </TestPlan>
     <hashTree>
       <JDBCDataSource guiclass="TestBeanGUI" testclass="JDBCDataSource" testname="Postgres Config">
@@ -26,7 +28,7 @@
         <stringProp name="connectionProperties"></stringProp>
       </JDBCDataSource>
       <hashTree/>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Update-heavy workload" enabled="true">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Update-heavy workload">
         <stringProp name="ThreadGroup.num_threads">${__P(number_of_threads)}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">${__P(ramp_time)}</stringProp>
         <stringProp name="ThreadGroup.duration">${__P(duration)}</stringProp>
@@ -39,16 +41,14 @@
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Update single random log" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Delete oldest logs">
           <stringProp name="dataSource">jdbcConfig</stringProp>
-          <stringProp name="query">UPDATE &quot;analise-comparativa-dbs&quot;.logs
-SET message = &apos;Updated log message: &apos; || FLOOR(RANDOM() * 1000)
+          <stringProp name="query">DELETE FROM &quot;analise-comparativa-dbs&quot;.logs
 WHERE id IN (
-    SELECT id
-    FROM &quot;analise-comparativa-dbs&quot;.logs
-    LIMIT 100
-);
-</stringProp>
+  SELECT id FROM &quot;analise-comparativa-dbs&quot;.logs
+  ORDER BY id
+  LIMIT 2
+);</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
           <stringProp name="queryType">Update Statement</stringProp>
@@ -59,15 +59,16 @@ WHERE id IN (
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Delete oldest logs" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Update single random log" enabled="true">
           <stringProp name="dataSource">jdbcConfig</stringProp>
-          <stringProp name="query">WITH cte AS (
-    SELECT ctid
+          <stringProp name="query">UPDATE &quot;analise-comparativa-dbs&quot;.logs
+SET message = &apos;Updated log message: &apos; || FLOOR(RANDOM() * 1000)
+WHERE id IN (
+    SELECT id
     FROM &quot;analise-comparativa-dbs&quot;.logs
-    LIMIT 2
-)
-DELETE FROM &quot;analise-comparativa-dbs&quot;.logs
-WHERE ctid IN (SELECT ctid FROM cte);</stringProp>
+    LIMIT 100
+);
+</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
           <stringProp name="queryType">Update Statement</stringProp>
