@@ -59,7 +59,8 @@ CREATE TABLE &quot;analise-comparativa-dbs&quot;.logs (
 
 CREATE INDEX idx_logs_timestamp ON &quot;analise-comparativa-dbs&quot;.logs(timestamp);
 CREATE INDEX idx_logs_log_level ON &quot;analise-comparativa-dbs&quot;.logs(log_level);
-CREATE INDEX idx_logs_test_id ON &quot;analise-comparativa-dbs&quot;.logs(test_id);</stringProp>
+CREATE INDEX idx_logs_test_id ON &quot;analise-comparativa-dbs&quot;.logs(test_id);
+CREATE INDEX idx_logs_source ON &quot;analise-comparativa-dbs&quot;.logs(source);</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
           <stringProp name="variableNames"></stringProp>
@@ -189,7 +190,7 @@ WHERE log_level = &apos;WARN&apos; LIMIT 10000;;</stringProp>
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Group and count by log_level" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Group and count by log_level">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Select Statement</stringProp>
           <stringProp name="query">SELECT log_level, COUNT(*) AS log_count
@@ -205,18 +206,14 @@ ORDER BY log_count DESC;</stringProp>
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Group and count by log_level and %" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Group and count by log_level and %">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Select Statement</stringProp>
-          <stringProp name="query">WITH total AS (
-  SELECT COUNT(*) AS total_logs
-  FROM &quot;analise-comparativa-dbs&quot;.logs
-)
-SELECT log_level,
+          <stringProp name="query">SELECT log_level,
        COUNT(*) AS log_count,
-       ROUND((COUNT(*) * 100.0 / total.total_logs), 2) AS percentage
-FROM &quot;analise-comparativa-dbs&quot;.logs, total
-GROUP BY log_level, total.total_logs
+       ROUND((COUNT(*) * 100.0 / SUM(COUNT(*)) OVER ()), 2) AS percentage
+FROM &quot;analise-comparativa-dbs&quot;.logs
+GROUP BY log_level
 ORDER BY percentage DESC;</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
@@ -278,7 +275,7 @@ vars.put(&quot;source&quot;, selectedSource)</stringProp>
         </JSR223PreProcessor>
         <hashTree/>
       </hashTree>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>

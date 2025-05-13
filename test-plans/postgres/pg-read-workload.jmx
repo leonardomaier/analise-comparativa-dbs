@@ -5,6 +5,8 @@
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
         <collectionProp name="Arguments.arguments"/>
       </elementProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
     </TestPlan>
     <hashTree>
       <JDBCDataSource guiclass="TestBeanGUI" testclass="JDBCDataSource" testname="Postgres Config">
@@ -26,7 +28,7 @@
         <stringProp name="connectionProperties"></stringProp>
       </JDBCDataSource>
       <hashTree/>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Read-heavy workload">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Read-heavy workload" enabled="true">
         <stringProp name="ThreadGroup.num_threads">${__P(number_of_threads)}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">${__P(ramp_time)}</stringProp>
         <stringProp name="ThreadGroup.duration">${__P(duration)}</stringProp>
@@ -81,7 +83,7 @@ WHERE log_level = &apos;WARN&apos; LIMIT 10000;;</stringProp>
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Group and count by log_level" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Group and count by log_level">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Select Statement</stringProp>
           <stringProp name="query">SELECT log_level, COUNT(*) AS log_count
@@ -97,18 +99,14 @@ ORDER BY log_count DESC;</stringProp>
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Group and count by log_level and %" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Group and count by log_level and %">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Select Statement</stringProp>
-          <stringProp name="query">WITH total AS (
-  SELECT COUNT(*) AS total_logs
-  FROM &quot;analise-comparativa-dbs&quot;.logs
-)
-SELECT log_level,
+          <stringProp name="query">SELECT log_level,
        COUNT(*) AS log_count,
-       ROUND((COUNT(*) * 100.0 / total.total_logs), 2) AS percentage
-FROM &quot;analise-comparativa-dbs&quot;.logs, total
-GROUP BY log_level, total.total_logs
+       ROUND((COUNT(*) * 100.0 / SUM(COUNT(*)) OVER ()), 2) AS percentage
+FROM &quot;analise-comparativa-dbs&quot;.logs
+GROUP BY log_level
 ORDER BY percentage DESC;</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
@@ -135,7 +133,7 @@ LIMIT 100;</stringProp>
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Most frequent source" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Most frequent source">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Select Statement</stringProp>
           <stringProp name="query">SELECT source, COUNT(*) as source_count
