@@ -20,7 +20,7 @@
         </elementProp>
       </SetupThreadGroup>
       <hashTree>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Connect to database">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Connect to database" enabled="true">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -122,7 +122,7 @@ vars.put(&quot;log_level&quot;, selectedLogLevel)
 vars.put(&quot;source&quot;, selectedSource)</stringProp>
         </JSR223PreProcessor>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Insert logs" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Insert logs">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -166,7 +166,7 @@ for (int i = 0; i &lt; 10; i++) {
 collection.insertMany(logEntries);</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Update single random log" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Update single random log">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -196,7 +196,7 @@ for (Document doc : documents) {
 }</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Delete oldest logs" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Delete oldest logs">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -218,69 +218,84 @@ if (idsToDelete) {
 }</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Filter by log_level INFO" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Filter by log_level INFO">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
           <stringProp name="cacheKey">true</stringProp>
           <stringProp name="script">import com.mongodb.client.MongoCollection;
 import org.bson.Document;
+
+// Obtem o número da thread atual do JMeter
+int threadId = ctx.getThreadNum()
 
 MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;);
 
-// Create a filter to match documents where log_level = &apos;INFO&apos;
-Document filter = new Document(&quot;log_level&quot;, &quot;INFO&quot;);
+// Cria o filtro combinando log_level e test_id
+Document filter = new Document(&quot;log_level&quot;, &quot;INFO&quot;)
+    .append(&quot;test_id&quot;, threadId);
 
-// Find all documents matching the filter
+// Busca os documentos com o filtro por log_level e thread
 collection.find(filter).limit(10000).into(new ArrayList&lt;&gt;());</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Filter by log_level ERROR" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Filter by log_level ERROR">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
           <stringProp name="cacheKey">true</stringProp>
           <stringProp name="script">import com.mongodb.client.MongoCollection;
 import org.bson.Document;
+
+int threadId = ctx.getThreadNum()
 
 MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;);
 
-// Create a filter to match documents where log_level = &apos;ERROR&apos;
-Document filter = new Document(&quot;log_level&quot;, &quot;ERROR&quot;);
+// Cria o filtro combinando log_level e test_id
+Document filter = new Document(&quot;log_level&quot;, &quot;ERROR&quot;)
+    .append(&quot;test_id&quot;, threadId);
 
-// Find all documents matching the filter
+// Busca os documentos filtrando por thread e log_level
 collection.find(filter).limit(10000).into(new ArrayList&lt;&gt;());</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Filter by log_level WARN" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Filter by log_level WARN">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
           <stringProp name="cacheKey">true</stringProp>
           <stringProp name="script">import com.mongodb.client.MongoCollection;
 import org.bson.Document;
+
+int threadId = ctx.getThreadNum()
 
 MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;);
 
-// Create a filter to match documents where log_level = &apos;WARN&apos;
-Document filter = new Document(&quot;log_level&quot;, &quot;WARN&quot;);
+// Cria o filtro com log_level e test_id
+Document filter = new Document(&quot;log_level&quot;, &quot;WARN&quot;)
+    .append(&quot;test_id&quot;, threadId);
 
-// Find all documents matching the filter
+// Busca documentos filtrando por thread e log_level
 collection.find(filter).limit(10000).into(new ArrayList&lt;&gt;());</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Group and count by log_level" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Group and count by log_level">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
           <stringProp name="cacheKey">true</stringProp>
           <stringProp name="script">import com.mongodb.client.MongoCollection;
 import org.bson.Document;
+
+int threadId = ctx.getThreadNum()
 
 MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;);
 
 // MongoDB aggregation pipeline to group by log_level and count occurrences
 collection.aggregate([
+    // Filtra documentos da thread atual
+    new Document(&apos;$match&apos;, new Document(&apos;test_id&apos;, threadId)),
+    
     // Group by log_level and count the occurrences
     new Document(&apos;$group&apos;, new Document(&apos;_id&apos;, &apos;$log_level&apos;).append(&apos;log_count&apos;, new Document(&apos;$sum&apos;, 1))),
     
@@ -289,7 +304,7 @@ collection.aggregate([
 ]).into(new ArrayList&lt;&gt;());</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Group and count by log_level and %" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Group and count by log_level and %">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -297,11 +312,15 @@ collection.aggregate([
           <stringProp name="script">import com.mongodb.client.MongoCollection
 import org.bson.Document
 
+int threadId = ctx.getThreadNum()
+
 MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;)
 
 def results = collection.aggregate([
     // 1. Match apenas os log_levels existentes (força o uso de índice em log_level, se houver)
-    new Document(&quot;\$match&quot;, new Document(&quot;log_level&quot;, new Document(&quot;\$in&quot;, [&quot;INFO&quot;, &quot;ERROR&quot;, &quot;WARN&quot;, &quot;DEBUG&quot;]))),
+    new Document(&quot;\$match&quot;, new Document(&quot;log_level&quot;, new Document(&quot;\$in&quot;, [&quot;INFO&quot;, &quot;ERROR&quot;, &quot;WARN&quot;, &quot;DEBUG&quot;]))
+        .append(&quot;test_id&quot;, threadId)
+    ),
 
     // 2. Agrupa por log_level e conta
     new Document(&quot;\$group&quot;, new Document(&quot;_id&quot;, &quot;\$log_level&quot;)
@@ -350,7 +369,7 @@ log.info(&quot;Aggregation with match and facet executed.&quot;)
 </stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Most recent logs" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Most recent logs">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -358,13 +377,17 @@ log.info(&quot;Aggregation with match and facet executed.&quot;)
           <stringProp name="script">import com.mongodb.client.MongoCollection
 import org.bson.Document
 
+int threadId = ctx.getThreadNum()
+
 // Get the MongoDB collection object from the props
 MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;)
 
 // MongoDB aggregation pipeline
 collection.aggregate([
-    // Match the logs with log_level = &apos;ERROR&apos;
-    new Document(&apos;$match&apos;, new Document(&apos;log_level&apos;, &apos;ERROR&apos;)),
+    // Match apenas os logs da thread atual com log_level = &apos;ERROR&apos;
+    new Document(&apos;$match&apos;, new Document(&apos;log_level&apos;, &apos;ERROR&apos;)
+        .append(&apos;test_id&apos;, threadId)
+    ),
 
     // Sort by timestamp in descending order
     new Document(&apos;$sort&apos;, new Document(&apos;timestamp&apos;, -1)),
@@ -374,7 +397,7 @@ collection.aggregate([
 ]).into(new ArrayList&lt;&gt;());</stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Most frequent source" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Most frequent source">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -382,11 +405,16 @@ collection.aggregate([
           <stringProp name="script">import com.mongodb.client.MongoCollection
 import org.bson.Document
 
+int threadId = ctx.getThreadNum()
+
 // Get the MongoDB collection object from the props
 MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;)
 
 // MongoDB aggregation pipeline
 collection.aggregate([
+    // Filtra os documentos da thread atual
+    new Document(&apos;$match&apos;, new Document(&apos;test_id&apos;, threadId)),
+
     // Group by source and count occurrences
     new Document(&apos;$group&apos;, new Document(&apos;_id&apos;, &apos;$source&apos;)
         .append(&apos;source_count&apos;, new Document(&apos;$sum&apos;, 1))
