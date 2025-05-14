@@ -18,7 +18,7 @@
         <stringProp name="driver">org.postgresql.Driver</stringProp>
         <boolProp name="keepAlive">true</boolProp>
         <stringProp name="password">root</stringProp>
-        <stringProp name="poolMax">100</stringProp>
+        <stringProp name="poolMax">500</stringProp>
         <stringProp name="timeout">10000</stringProp>
         <stringProp name="transactionIsolation">DEFAULT</stringProp>
         <stringProp name="trimInterval">60000</stringProp>
@@ -39,7 +39,7 @@
         </elementProp>
       </SetupThreadGroup>
       <hashTree>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Create fresh tables">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Create fresh tables" enabled="true">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Update Statement</stringProp>
           <stringProp name="query">DROP SCHEMA IF EXISTS &quot;analise-comparativa-dbs&quot; CASCADE;
@@ -71,7 +71,7 @@ CREATE INDEX idx_logs_source ON &quot;analise-comparativa-dbs&quot;.logs(source)
         </JDBCSampler>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Insert-heavy workload">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Insert-heavy workload" enabled="true">
         <stringProp name="ThreadGroup.num_threads">${__P(number_of_threads)}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">${__P(ramp_time)}</stringProp>
         <stringProp name="ThreadGroup.duration">${__P(duration)}</stringProp>
@@ -125,7 +125,7 @@ vars.put(&quot;source&quot;, selectedSource)</stringProp>
         </JSR223PreProcessor>
         <hashTree/>
       </hashTree>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>

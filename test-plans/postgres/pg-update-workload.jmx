@@ -18,7 +18,7 @@
         <stringProp name="driver">org.postgresql.Driver</stringProp>
         <boolProp name="keepAlive">true</boolProp>
         <stringProp name="password">root</stringProp>
-        <stringProp name="poolMax">100</stringProp>
+        <stringProp name="poolMax">500</stringProp>
         <stringProp name="timeout">10000</stringProp>
         <stringProp name="transactionIsolation">DEFAULT</stringProp>
         <stringProp name="trimInterval">60000</stringProp>
@@ -41,7 +41,7 @@
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Update single random log">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Update single random log" enabled="true">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="query">UPDATE &quot;analise-comparativa-dbs&quot;.logs
 SET message = &apos;Updated log message: &apos; || FLOOR(RANDOM() * 1000)
@@ -62,7 +62,7 @@ WHERE test_id = ${__threadNum}
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Delete oldest logs">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Delete oldest logs" enabled="true">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="query">DELETE FROM &quot;analise-comparativa-dbs&quot;.logs
 WHERE test_id = ${__threadNum}
@@ -83,7 +83,7 @@ WHERE test_id = ${__threadNum}
         </JDBCSampler>
         <hashTree/>
       </hashTree>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
