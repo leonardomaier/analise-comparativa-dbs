@@ -5,36 +5,36 @@ test_scenarios = [
     # Format: (duration, threads, ramp_time, database, query_type)
 
     # --- PostgreSQL scenarios ---
-    (1800, 100, 60, 'pg', 'insert'),
-    (1800, 100, 60, 'pg', 'read'),
-    (1800, 100, 60, 'pg', 'update'),
-    (1800, 100, 60, 'pg', 'mixed'),
+    # (1800, 100, 60, 'pg', 'insert'),
+    # (1800, 100, 60, 'pg', 'read'),
+    # (1800, 100, 60, 'pg', 'update'),
+    # (1800, 100, 60, 'pg', 'mixed'),
 
-    (1800, 200, 120, 'pg', 'insert'),
-    (1800, 200, 120, 'pg', 'read'),
-    (1800, 200, 120, 'pg', 'update'),
-    (1800, 200, 120, 'pg', 'mixed'),
+    # (1800, 200, 120, 'pg', 'insert'),
+    # (1800, 200, 120, 'pg', 'read'),
+    # (1800, 200, 120, 'pg', 'update'),
+    # (1800, 200, 120, 'pg', 'mixed'),
 
-    (1800, 400, 240, 'pg', 'insert'),
-    (1800, 400, 240, 'pg', 'read'),
-    (1800, 400, 240, 'pg', 'update'),
+    # (1800, 400, 240, 'pg', 'insert'),
+    # (1800, 400, 240, 'pg', 'read'),
+    # (1800, 400, 240, 'pg', 'update'),
     (1800, 400, 240, 'pg', 'mixed'),
 
     # --- MongoDB scenarios ---
-    (1800, 100, 60, 'mongo', 'insert'),
-    (1800, 100, 60, 'mongo', 'read'),
-    (1800, 100, 60, 'mongo', 'update'),
-    (1800, 100, 60, 'mongo', 'mixed'),
+    # (1800, 100, 60, 'mongo', 'insert'),
+    # (1800, 100, 60, 'mongo', 'read'),
+    # (1800, 100, 60, 'mongo', 'update'),
+    # (1800, 100, 60, 'mongo', 'mixed'),
 
-    (1800, 200, 120, 'mongo', 'insert'),
-    (1800, 200, 120, 'mongo', 'read'),
-    (1800, 200, 120, 'mongo', 'update'),
-    (1800, 200, 120, 'mongo', 'mixed'),
+    # (1800, 200, 120, 'mongo', 'insert'),
+    # (1800, 200, 120, 'mongo', 'read'),
+    # (1800, 200, 120, 'mongo', 'update'),
+    # (1800, 200, 120, 'mongo', 'mixed'),
 
-    (1800, 400, 240, 'mongo', 'insert'),
-    (1800, 400, 240, 'mongo', 'read'),
-    (1800, 400, 240, 'mongo', 'update'),
-    (1800, 400, 240, 'mongo', 'mixed'),
+    # (1800, 400, 240, 'mongo', 'insert'),
+    # (1800, 400, 240, 'mongo', 'read'),
+    # (1800, 400, 240, 'mongo', 'update'),
+    # (1800, 400, 240, 'mongo', 'mixed'),
 ]
 
 # test_scenarios = [
