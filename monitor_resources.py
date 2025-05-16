@@ -6,86 +6,97 @@ import os
 import threading
 import argparse
 import shutil
-
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path='./env')
 
-def monitor_resources(test_duration, number_of_threads, database_to_test, query_type):
+def find_main_pid(process_name):
+    for proc in psutil.process_iter(['pid', 'ppid', 'name', 'cmdline']):
+        try:
+            if process_name in proc.info['name'] and proc.info['ppid'] == 1:
+                return proc.pid
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+    return None
 
+def monitor_resources(test_duration, database_to_test, number_of_threads, query_type):
     output_folder_name = './resource-usage'
-     
     resource_usage_file = f'{output_folder_name}/{database_to_test}_{test_duration}_seconds_{number_of_threads}_threads_{query_type}_workload.csv'
 
-    if not os.path.exists(f'{output_folder_name}/'):
-        os.makedirs(f'{output_folder_name}/')
+    if not os.path.exists(output_folder_name):
+        os.makedirs(output_folder_name)
 
+    process_name = 'postgres' if database_to_test == 'pg' else 'mongod'
+    pid = find_main_pid(process_name)
+    if not pid:
+        print(f"Processo principal de {process_name} não encontrado.")
+        return
+
+    proc = psutil.Process(pid)
     with open(resource_usage_file, 'w', newline='') as csvfile:
-        fieldnames = ['Time', 'CPU Usage', 'Memory Usage']
+        fieldnames = ['Time', 'CPU Usage (%)', 'Memory Usage (MB)']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
 
         start_time = time.time()
-
         while time.time() - start_time < test_duration:
-            cpu_usage = psutil.cpu_percent(interval=None)
-            memory_info = psutil.virtual_memory()
+            try:
+                cpu = proc.cpu_percent(interval=1)
+                mem = proc.memory_info().rss / 1024**2  # Em MB
+                writer.writerow({
+                    'Time': time.time(),
+                    'CPU Usage (%)': cpu,
+                    'Memory Usage (MB)': mem
+                })
+            except psutil.NoSuchProcess:
+                break
 
-            writer.writerow({
-                'Time': time.time(),
-                'CPU Usage': cpu_usage,
-                'Memory Usage': memory_info.percent
-            })
-            
-            time.sleep(1)  # Sleep for 1 second before recording again
 
-# Start the stress test and monitor resources simultaneously
+def manage_services(database_to_test):
+    db_services = {'pg': 'postgresql', 'mongo': 'mongod'}
+    active_service = db_services[database_to_test]
+    inactive_service = db_services['pg' if database_to_test == 'mongo' else 'mongo']
+
+    subprocess.run(['sudo', 'systemctl', 'stop', inactive_service])
+    subprocess.run(['sudo', 'systemctl', 'restart', active_service])
+    time.sleep(10)  # Pequeno delay para o serviço estabilizar
+
 def start_stress_test(test_duration, number_of_threads, ramp_time, database_to_test, query_type):
+    manage_services(database_to_test)
 
     output_dir = f'./output/{database_to_test}/{test_duration}_seconds_duration/{ramp_time}_seconds_ramp/{number_of_threads}_threads/{query_type}_workload'
     web_dir = f'./web/{database_to_test}/{test_duration}_seconds_duration/{ramp_time}_seconds_ramp/{number_of_threads}_threads/{query_type}_workload'
 
-    # Clean up the "web" and "output" folders before running JMeter
     if os.path.exists(output_dir):
-        shutil.rmtree(output_dir)  # Removes the directory and all its contents
-
-    # Clean up the output directory
+        shutil.rmtree(output_dir)
     if os.path.exists(web_dir):
-        shutil.rmtree(web_dir)  # Removes the directory and all its contents
+        shutil.rmtree(web_dir)
 
-    # Recreate the folders to avoid errors (JMeter expects them to exist)
     os.makedirs(output_dir)
     os.makedirs(web_dir)
 
     database_folder_name = "postgres" if database_to_test == "pg" else "mongo"
-
     jmx_file_path = os.path.expanduser(f'./test-plans/{database_folder_name}/{database_to_test}-{query_type}-workload.jmx')
-    
-    monitor_thread = threading.Thread(target=monitor_resources, args=(test_duration, number_of_threads, database_to_test, query_type))
+
+    monitor_thread = threading.Thread(target=monitor_resources, args=(test_duration, database_to_test, number_of_threads, query_type))
     monitor_thread.start()
-    
+
     jmeter_command = [
-        "jmeter", 
-        "-n", 
-        "-t", 
-        jmx_file_path, 
-        "-l", 
-        f'{output_dir}/results.csv', 
-        "-e", 
-        "-o", 
-        web_dir, 
+        "jmeter",
+        "-n",
+        "-t", jmx_file_path,
+        "-l", f'{output_dir}/results.csv',
+        "-e",
+        "-o", web_dir,
         f'-Jduration={test_duration}',
         f'-Jnumber_of_threads={number_of_threads}',
         f'-Jramp_time={ramp_time}'
     ]
-    
-    subprocess.run(jmeter_command)
 
-    # After the stress test is completed, stop the monitoring
+    subprocess.run(jmeter_command)
     monitor_thread.join()
 
 if __name__ == "__main__":
-    # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Run a stress test with specified parameters.")
     parser.add_argument('--duration', type=int, default=30, help="Duration of the test in seconds")
     parser.add_argument('--threads', type=int, default=10, help="Number of threads to simulate in the test")
@@ -94,5 +105,4 @@ if __name__ == "__main__":
     parser.add_argument('--type', choices=['insert', 'update', 'read', 'mixed'], default='insert', help="Type of query to run in the test")
 
     args = parser.parse_args()
-
     start_stress_test(args.duration, args.threads, args.ramp, args.database, args.type)
