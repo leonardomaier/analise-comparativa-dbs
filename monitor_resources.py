@@ -34,7 +34,7 @@ def monitor_resources(test_duration, database_to_test, number_of_threads, query_
 
     proc = psutil.Process(pid)
     with open(resource_usage_file, 'w', newline='') as csvfile:
-        fieldnames = ['Time', 'CPU Usage (%)', 'Memory Usage (MB)']
+        fieldnames = ['Time', 'CPU Usage (%)', 'Memory Usage (%)']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
 
@@ -42,11 +42,11 @@ def monitor_resources(test_duration, database_to_test, number_of_threads, query_
         while time.time() - start_time < test_duration:
             try:
                 cpu = proc.cpu_percent(interval=1)
-                mem = proc.memory_info().rss / 1024**2  # Em MB
+                mem_percent = proc.memory_percent()  # Memory usage in percentage
                 writer.writerow({
                     'Time': time.time(),
                     'CPU Usage (%)': cpu,
-                    'Memory Usage (MB)': mem
+                    'Memory Usage (%)': mem_percent
                 })
             except psutil.NoSuchProcess:
                 break
@@ -59,7 +59,7 @@ def manage_services(database_to_test):
 
     subprocess.run(['systemctl', 'stop', inactive_service])
     subprocess.run(['systemctl', 'restart', active_service])
-    time.sleep(10)  # Pequeno delay para o serviço estabilizar
+    time.sleep(20)
 
 def start_stress_test(test_duration, number_of_threads, ramp_time, database_to_test, query_type):
     manage_services(database_to_test)
