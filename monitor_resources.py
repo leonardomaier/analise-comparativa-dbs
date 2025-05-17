@@ -57,8 +57,8 @@ def manage_services(database_to_test):
     active_service = db_services[database_to_test]
     inactive_service = db_services['pg' if database_to_test == 'mongo' else 'mongo']
 
-    subprocess.run(['systemctl', 'stop', inactive_service])
-    subprocess.run(['systemctl', 'restart', active_service])
+    subprocess.run(['sudo', 'systemctl', 'stop', inactive_service])
+    subprocess.run(['sudo', 'systemctl', 'restart', active_service])
     time.sleep(10)  # Pequeno delay para o serviço estabilizar
 
 def start_stress_test(test_duration, number_of_threads, ramp_time, database_to_test, query_type):
