@@ -1,4 +1,3 @@
-### client_runner.py (executado no CLIENTE)
 import subprocess
 import time
 import os
@@ -15,11 +14,11 @@ def run_test(duration, threads, ramp_time, database, query_type):
     # Inicia o monitoramento com duracao limitada (test_duration)
     ssh_command = (
         f'ssh {server_user}@{server_ip} '
-        f'"tcc && {remote_python_path} {remote_script_path} '
+        f'"tcc && '
+        f'systemctl {'restart postgresql && sudo systemctl stop mongod' if database == 'pg' else 'restart mongod && sudo systemctl stop postgresql'} && {remote_python_path} {remote_script_path} '
         f'--duration {duration} --threads {threads} --ramp {ramp_time} '
         f'--database {database} --type {query_type}" &'
     )
-    
     subprocess.run(ssh_command, shell=True)
 
     print("⏳ Aguardando inicialização do monitoramento...")
@@ -35,7 +34,6 @@ def run_test(duration, threads, ramp_time, database, query_type):
         subprocess.run(["rm", "-rf", output_dir])
     if os.path.exists(web_dir):
         subprocess.run(["rm", "-rf", web_dir])
-    
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(web_dir, exist_ok=True)
 
