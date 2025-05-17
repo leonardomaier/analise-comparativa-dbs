@@ -59,7 +59,7 @@ def manage_services(database_to_test):
 
     subprocess.run(['systemctl', 'stop', inactive_service])
     subprocess.run(['systemctl', 'restart', active_service])
-    time.sleep(60)
+    time.sleep(20)
 
 def start_stress_test(test_duration, number_of_threads, ramp_time, database_to_test, query_type):
     manage_services(database_to_test)
