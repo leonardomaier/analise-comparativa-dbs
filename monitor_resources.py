@@ -19,14 +19,6 @@ def find_main_pid(process_name):
             continue
     return None
 
-def get_process_tree_cpu_mem(proc):
-    try:
-        cpu_time = sum([p.cpu_times().user + p.cpu_times().system for p in [proc] + proc.children(recursive=True)])
-        mem_percent = sum([p.memory_percent() for p in [proc] + proc.children(recursive=True)])
-        return cpu_time, mem_percent
-    except (psutil.NoSuchProcess, psutil.AccessDenied):
-        return 0.0, 0.0
-
 def monitor_resources(test_duration, database_to_test, number_of_threads, query_type):
     output_folder_name = './resource-usage'
     resource_usage_file = f'{output_folder_name}/{database_to_test}_{test_duration}_seconds_{number_of_threads}_threads_{query_type}_workload.csv'
@@ -35,41 +27,30 @@ def monitor_resources(test_duration, database_to_test, number_of_threads, query_
         os.makedirs(output_folder_name)
 
     process_name = 'postgres' if database_to_test == 'pg' else 'mongod'
-    parent_pid = find_main_pid(process_name)
-    if not parent_pid:
-        print(f"Main process for {process_name} not found.")
+    pid = find_main_pid(process_name)
+    if not pid:
+        print(f"Processo principal de {process_name} não encontrado.")
         return
 
-    parent_proc = psutil.Process(parent_pid)
-    total_cores = psutil.cpu_count(logical=True)
-
+    proc = psutil.Process(pid)
     with open(resource_usage_file, 'w', newline='') as csvfile:
         fieldnames = ['Time', 'CPU Usage', 'Memory Usage']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
 
         start_time = time.time()
-        last_cpu_time, _ = get_process_tree_cpu_mem(parent_proc)
-        last_check_time = time.time()
-
         while time.time() - start_time < test_duration:
-            time.sleep(1)
-            current_time = time.time()
-            current_cpu_time, mem_percent = get_process_tree_cpu_mem(parent_proc)
+            try:
+                cpu = proc.cpu_percent(interval=1)
+                mem_percent = proc.memory_percent()  # Memory usage in percentage
+                writer.writerow({
+                    'Time': time.time(),
+                    'CPU Usage': cpu,
+                    'Memory Usage': mem_percent
+                })
+            except psutil.NoSuchProcess:
+                break
 
-            delta_cpu = current_cpu_time - last_cpu_time
-            delta_time = current_time - last_check_time
-
-            cpu_percent = (delta_cpu / delta_time) / total_cores * 100.0 if delta_time > 0 else 0.0
-
-            writer.writerow({
-                'Time': current_time,
-                'CPU Usage': round(cpu_percent, 2),
-                'Memory Usage': round(mem_percent, 2)
-            })
-
-            last_cpu_time = current_cpu_time
-            last_check_time = current_time
 
 def manage_services(database_to_test):
     db_services = {'pg': 'postgresql', 'mongo': 'mongod'}
