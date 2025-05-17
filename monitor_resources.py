@@ -34,7 +34,7 @@ def monitor_resources(test_duration, database_to_test, number_of_threads, query_
 
     proc = psutil.Process(pid)
     with open(resource_usage_file, 'w', newline='') as csvfile:
-        fieldnames = ['Time', 'CPU Usage', 'Memory Usage']
+        fieldnames = ['Time', 'CPU Usage (%)', 'Memory Usage (%)']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
 
@@ -45,8 +45,8 @@ def monitor_resources(test_duration, database_to_test, number_of_threads, query_
                 mem_percent = proc.memory_percent()  # Memory usage in percentage
                 writer.writerow({
                     'Time': time.time(),
-                    'CPU Usage': cpu,
-                    'Memory Usage': mem_percent
+                    'CPU Usage (%)': cpu,
+                    'Memory Usage (%)': mem_percent
                 })
             except psutil.NoSuchProcess:
                 break
