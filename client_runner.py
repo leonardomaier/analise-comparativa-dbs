@@ -5,24 +5,36 @@ import os
 # Configurações de SSH
 server_user = "root"
 server_ip = "144.76.99.247"
-remote_script_path = "monitor_resources.py"
+remote_script_path = "server_runner.py"
 remote_python_path = "python3"
 
 def run_test(duration, threads, ramp_time, database, query_type):
     print("\n🛰️ Iniciando monitoramento remoto no servidor...")
 
-    # Inicia o monitoramento com duracao limitada (test_duration)
+    if database == 'pg':
+        restart_services = (
+            'systemctl stop mongod; '
+            'systemctl restart postgresql'
+        )
+    else:
+        restart_services = (
+            'systemctl stop postgresql; '
+            'systemctl restart mongod'
+        )
+
     ssh_command = (
         f'ssh {server_user}@{server_ip} '
-        f'"tcc && '
-        f'systemctl {'restart postgresql && sudo systemctl stop mongod' if database == 'pg' else 'restart mongod && sudo systemctl stop postgresql'} && {remote_python_path} {remote_script_path} '
+        f'"source ~/env/bin/activate && cd ~/analise-comparativa-dbs && '
+        f'{restart_services} && '
+        f'{remote_python_path} {remote_script_path} '
         f'--duration {duration} --threads {threads} --ramp {ramp_time} '
         f'--database {database} --type {query_type}" &'
-    )
+    )    
+    
     subprocess.run(ssh_command, shell=True)
 
     print("⏳ Aguardando inicialização do monitoramento...")
-    time.sleep(5)
+    time.sleep(30)
 
     print("🚀 Executando teste de carga com JMeter...")
     database_folder_name = "postgres" if database == "pg" else "mongo"

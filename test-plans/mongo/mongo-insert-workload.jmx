@@ -27,12 +27,23 @@
           <stringProp name="cacheKey">true</stringProp>
           <stringProp name="script">import com.mongodb.MongoClient
 import com.mongodb.MongoClientURI
+import com.mongodb.MongoClientOptions
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;
 
-String mongoUri = &quot;mongodb://localhost:27017/?maxPoolSize=500&quot;
-MongoClientURI uri = new MongoClientURI(mongoUri)
+MongoClientOptions options = MongoClientOptions.builder()
+    .connectTimeout(30000)
+    .socketTimeout(60000)
+    .maxConnectionIdleTime(0)
+    .connectionsPerHost(500)
+    .build()
+
+String uriString = &quot;mongodb://144.76.99.247:27017/?maxPoolSize=500&quot;
+MongoClientURI uri = new MongoClientURI(uriString, MongoClientOptions.builder(options))
+
+//String mongoUri = &quot;mongodb://144.76.99.247:27017/?maxPoolSize=500&quot;
+//MongoClientURI uri = new MongoClientURI(mongoUri)
 
 MongoClient mongoClient = new MongoClient(uri)
 
@@ -60,6 +71,12 @@ collection.createIndex(new Document(&quot;test_id&quot;, 1))
 
 // Índice simples em source
 collection.createIndex(new Document(&quot;source&quot;, 1))
+
+// Indice composto
+collection.createIndex(new Document([
+    log_level: 1,
+    test_id: 1
+]))
 
 props.put(&quot;logs_collection&quot;, collection)
 

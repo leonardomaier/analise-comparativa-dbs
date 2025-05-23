@@ -14,11 +14,11 @@
         <stringProp name="checkQuery"></stringProp>
         <stringProp name="connectionAge">5000</stringProp>
         <stringProp name="dataSource">jdbcConfig</stringProp>
-        <stringProp name="dbUrl">jdbc:postgresql://localhost:5432/postgres</stringProp>
+        <stringProp name="dbUrl">jdbc:postgresql://144.76.99.247:5432/postgres</stringProp>
         <stringProp name="driver">org.postgresql.Driver</stringProp>
         <boolProp name="keepAlive">true</boolProp>
         <stringProp name="password">root</stringProp>
-        <stringProp name="poolMax">500</stringProp>
+        <stringProp name="poolMax">0</stringProp>
         <stringProp name="timeout">10000</stringProp>
         <stringProp name="transactionIsolation">DEFAULT</stringProp>
         <stringProp name="trimInterval">60000</stringProp>

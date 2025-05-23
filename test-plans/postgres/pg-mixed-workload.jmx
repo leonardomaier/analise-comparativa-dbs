@@ -14,11 +14,11 @@
         <stringProp name="checkQuery"></stringProp>
         <stringProp name="connectionAge">5000</stringProp>
         <stringProp name="dataSource">jdbcConfig</stringProp>
-        <stringProp name="dbUrl">jdbc:postgresql://localhost:5432/postgres</stringProp>
+        <stringProp name="dbUrl">jdbc:postgresql://144.76.99.247:5432/postgres</stringProp>
         <stringProp name="driver">org.postgresql.Driver</stringProp>
         <boolProp name="keepAlive">true</boolProp>
         <stringProp name="password">root</stringProp>
-        <stringProp name="poolMax">500</stringProp>
+        <stringProp name="poolMax">0</stringProp>
         <stringProp name="timeout">10000</stringProp>
         <stringProp name="transactionIsolation">DEFAULT</stringProp>
         <stringProp name="trimInterval">60000</stringProp>
@@ -39,7 +39,7 @@
         </elementProp>
       </SetupThreadGroup>
       <hashTree>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Create fresh tables" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Create fresh tables">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Update Statement</stringProp>
           <stringProp name="query">DROP SCHEMA IF EXISTS &quot;analise-comparativa-dbs&quot; CASCADE;
@@ -60,7 +60,11 @@ CREATE TABLE &quot;analise-comparativa-dbs&quot;.logs (
 CREATE INDEX idx_logs_timestamp ON &quot;analise-comparativa-dbs&quot;.logs(timestamp);
 CREATE INDEX idx_logs_log_level ON &quot;analise-comparativa-dbs&quot;.logs(log_level);
 CREATE INDEX idx_logs_test_id ON &quot;analise-comparativa-dbs&quot;.logs(test_id);
-CREATE INDEX idx_logs_source ON &quot;analise-comparativa-dbs&quot;.logs(source);</stringProp>
+CREATE INDEX idx_logs_source ON &quot;analise-comparativa-dbs&quot;.logs(source);
+
+-- Índices compostos nas duas ordens:
+CREATE INDEX idx_logs_loglevel_testid ON &quot;analise-comparativa-dbs&quot;.logs(log_level, test_id);
+CREATE INDEX idx_logs_testid_loglevel ON &quot;analise-comparativa-dbs&quot;.logs(test_id, log_level);</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
           <stringProp name="variableNames"></stringProp>
@@ -84,7 +88,7 @@ CREATE INDEX idx_logs_source ON &quot;analise-comparativa-dbs&quot;.logs(source)
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Insert logs">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Insert logs" enabled="true">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="query">INSERT INTO &quot;analise-comparativa-dbs&quot;.logs (timestamp, log_level, message, source, test_id)
 SELECT
@@ -107,7 +111,7 @@ FROM generate_series(1,10);
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Update single random log">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Update single random log" enabled="true">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="query">UPDATE &quot;analise-comparativa-dbs&quot;.logs
 SET message = &apos;Updated log message: &apos; || FLOOR(RANDOM() * 1000)
@@ -128,7 +132,7 @@ SELECT MIN(id) FROM &quot;analise-comparativa-dbs&quot;.logs WHERE test_id = ${_
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Delete oldest logs">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Delete oldest logs" enabled="true">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="query">DELETE FROM &quot;analise-comparativa-dbs&quot;.logs
 WHERE test_id = ${__threadNum}
@@ -148,7 +152,7 @@ SELECT MIN(id) FROM &quot;analise-comparativa-dbs&quot;.logs WHERE test_id = ${_
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Filter by log_level INFO">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Filter by log_level INFO" enabled="true">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Select Statement</stringProp>
           <stringProp name="query">SELECT * FROM &quot;analise-comparativa-dbs&quot;.logs
@@ -164,7 +168,7 @@ LIMIT 10000;
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Filter by log_level ERROR">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Filter by log_level ERROR" enabled="true">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Select Statement</stringProp>
           <stringProp name="query">SELECT * FROM &quot;analise-comparativa-dbs&quot;.logs
@@ -180,7 +184,7 @@ LIMIT 10000;
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Filter by log_level WARN">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Filter by log_level WARN" enabled="true">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Select Statement</stringProp>
           <stringProp name="query">SELECT * FROM &quot;analise-comparativa-dbs&quot;.logs
@@ -196,7 +200,7 @@ LIMIT 10000;
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Group and count by log_level">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Group and count by log_level" enabled="true">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Select Statement</stringProp>
           <stringProp name="query">SELECT log_level, COUNT(*) AS log_count
@@ -214,7 +218,7 @@ ORDER BY log_count DESC;
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Group and count by log_level and %">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Group and count by log_level and %" enabled="true">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Select Statement</stringProp>
           <stringProp name="query">SELECT log_level,
@@ -234,7 +238,7 @@ ORDER BY percentage DESC;
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Most recent logs">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Most recent logs" enabled="true">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Select Statement</stringProp>
           <stringProp name="query">SELECT * FROM &quot;analise-comparativa-dbs&quot;.logs
@@ -251,7 +255,7 @@ LIMIT 100;
           <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Most frequent source">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="Most frequent source" enabled="true">
           <stringProp name="dataSource">jdbcConfig</stringProp>
           <stringProp name="queryType">Select Statement</stringProp>
           <stringProp name="query">SELECT source, COUNT(*) as source_count

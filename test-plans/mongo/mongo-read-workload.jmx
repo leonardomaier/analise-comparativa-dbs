@@ -27,12 +27,23 @@
           <stringProp name="cacheKey">true</stringProp>
           <stringProp name="script">import com.mongodb.MongoClient
 import com.mongodb.MongoClientURI
+import com.mongodb.MongoClientOptions
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;
 
-String mongoUri = &quot;mongodb://localhost:27017/?maxPoolSize=500&quot;
-MongoClientURI uri = new MongoClientURI(mongoUri)
+MongoClientOptions options = MongoClientOptions.builder()
+    .connectTimeout(30000)
+    .socketTimeout(60000)
+    .maxConnectionIdleTime(0)
+    .connectionsPerHost(500)
+    .build()
+
+String uriString = &quot;mongodb://144.76.99.247:27017/?maxPoolSize=500&quot;
+MongoClientURI uri = new MongoClientURI(uriString, MongoClientOptions.builder(options))
+
+//String mongoUri = &quot;mongodb://144.76.99.247:27017/?maxPoolSize=500&quot;
+//MongoClientURI uri = new MongoClientURI(mongoUri)
 
 MongoClient mongoClient = new MongoClient(uri)
 
@@ -107,8 +118,8 @@ int threadId = ctx.getThreadNum()
 MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;);
 
 // Cria o filtro combinando log_level e test_id
-Document filter = new Document(&quot;log_level&quot;, &quot;INFO&quot;)
-    .append(&quot;test_id&quot;, threadId);
+Document filter = new Document(&quot;test_id&quot;, threadId)
+    .append(&quot;log_level&quot;, &quot;INFO&quot;)
 
 // Busca os documentos com o filtro por log_level e thread
 collection.find(filter).limit(10000).into(new ArrayList&lt;&gt;());</stringProp>
@@ -128,8 +139,8 @@ int threadId = ctx.getThreadNum()
 MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;);
 
 // Cria o filtro combinando log_level e test_id
-Document filter = new Document(&quot;log_level&quot;, &quot;ERROR&quot;)
-    .append(&quot;test_id&quot;, threadId);
+Document filter = new Document(&quot;test_id&quot;, threadId)
+    .append(&quot;log_level&quot;, &quot;ERROR&quot;)
 
 // Busca os documentos filtrando por thread e log_level
 collection.find(filter).limit(10000).into(new ArrayList&lt;&gt;());</stringProp>
@@ -149,8 +160,8 @@ int threadId = ctx.getThreadNum()
 MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;);
 
 // Cria o filtro com log_level e test_id
-Document filter = new Document(&quot;log_level&quot;, &quot;WARN&quot;)
-    .append(&quot;test_id&quot;, threadId);
+Document filter = new Document(&quot;test_id&quot;, threadId)
+    .append(&quot;log_level&quot;, &quot;WARN&quot;)
 
 // Busca documentos filtrando por thread e log_level
 collection.find(filter).limit(10000).into(new ArrayList&lt;&gt;());</stringProp>

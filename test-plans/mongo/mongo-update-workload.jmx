@@ -27,12 +27,23 @@
           <stringProp name="cacheKey">true</stringProp>
           <stringProp name="script">import com.mongodb.MongoClient
 import com.mongodb.MongoClientURI
+import com.mongodb.MongoClientOptions
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;
 
-String mongoUri = &quot;mongodb://localhost:27017/?maxPoolSize=500&quot;
-MongoClientURI uri = new MongoClientURI(mongoUri)
+MongoClientOptions options = MongoClientOptions.builder()
+    .connectTimeout(30000)
+    .socketTimeout(60000)
+    .maxConnectionIdleTime(0)
+    .connectionsPerHost(500)
+    .build()
+
+String uriString = &quot;mongodb://144.76.99.247:27017/?maxPoolSize=500&quot;
+MongoClientURI uri = new MongoClientURI(uriString, MongoClientOptions.builder(options))
+
+//String mongoUri = &quot;mongodb://144.76.99.247:27017/?maxPoolSize=500&quot;
+//MongoClientURI uri = new MongoClientURI(mongoUri)
 
 MongoClient mongoClient = new MongoClient(uri)
 
@@ -79,7 +90,7 @@ if (mongoClient != null) {
         </JSR223Sampler>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Update-heavy workload">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Update-heavy workload" enabled="true">
         <stringProp name="ThreadGroup.num_threads">${__P(number_of_threads)}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">${__P(ramp_time)}</stringProp>
         <stringProp name="ThreadGroup.duration">${__P(duration)}</stringProp>
@@ -119,33 +130,33 @@ if (idsToDelete) {
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
           <stringProp name="cacheKey">true</stringProp>
-          <stringProp name="script">import com.mongodb.client.model.Updates;
-import com.mongodb.client.MongoCollection;
-import org.bson.Document;
-import java.util.Random;
+          <stringProp name="script">import com.mongodb.client.model.Updates
+import com.mongodb.client.MongoCollection
+import org.bson.Document
+import java.util.Random
 
-MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;);
-Random rand = new Random();
+MongoCollection&lt;Document&gt; collection = props.get(&quot;logs_collection&quot;)
+Random rand = new Random()
+int threadId = ctx.getThreadNum()
 
-int threadId = ctx.getThreadNum()  // Get current thread ID
-
-// Find the first 100 documents by natural order (insertion order)
-List&lt;Document&gt; documents = collection.find(new Document(&quot;test_id&quot;, threadId))
+// 1. Buscar os primeiros 100 _id da thread atual
+List&lt;Object&gt; ids = collection.find(new Document(&quot;test_id&quot;, threadId))
     .limit(100)
+    .map { it.get(&quot;_id&quot;) }
     .into(new ArrayList&lt;&gt;())
 
-// Loop over the documents and update them
-for (Document doc : documents) {
+// 2. Atualizar todos com updateMany e operador $in
+if (!ids.isEmpty()) {
     int randomValue = rand.nextInt(1000)
-    collection.updateOne(
-        new Document(&quot;_id&quot;, doc.get(&quot;_id&quot;)),
+    collection.updateMany(
+        new Document(&quot;_id&quot;, new Document(&quot;\$in&quot;, ids)),
         Updates.set(&quot;message&quot;, &quot;Updated log message: &quot; + randomValue)
     )
 }</stringProp>
         </JSR223Sampler>
         <hashTree/>
       </hashTree>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
@@ -180,7 +191,7 @@ for (Document doc : documents) {
         <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
-      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report">
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
