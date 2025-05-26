@@ -8,6 +8,7 @@ server_ip = "144.76.99.247"
 remote_script_path = "server_runner.py"
 remote_python_path = "python3"
 
+# Função para executar o teste de carga no servidor remoto
 def run_test(duration, threads, ramp_time, database, query_type):
     print("\n🛰️ Iniciando monitoramento remoto no servidor...")
 

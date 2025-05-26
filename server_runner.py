@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv(dotenv_path='./env')
 
+# It's executed in the server-side, triggered by the client-side
 def monitor_resources(test_duration, number_of_threads, database_to_test, query_type):
     output_folder_name = './resource-usage'
     resource_usage_file = f'{output_folder_name}/{database_to_test}_{test_duration}_seconds_{number_of_threads}_threads_{query_type}_workload.csv'
